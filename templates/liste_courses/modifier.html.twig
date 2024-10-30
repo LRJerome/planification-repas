@@ -1,0 +1,57 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Modifier la Liste de Courses{% endblock %}
+
+{% block body %}
+    <div class="container mt-5">
+        <h1 class="mb-4">Modifier la Liste de Courses</h1>
+
+        {{ form_start(form, {'attr': {'class': 'form-group'}}) }}
+
+<div class="mb-3">
+    {{ form_label(form.nom, 'Nom de l\'ingrédient', {'label_attr': {'class': 'form-label'}}) }}
+    {{ form_widget(form.nom, {'attr': {'class': 'form-control'}}) }}
+</div>
+
+<div class="mb-3">
+    {{ form_label(form.quantiteDefaut, 'Quantité par défaut', {'label_attr': {'class': 'form-label'}}) }}
+    {{ form_widget(form.quantiteDefaut, {'attr': {'class': 'form-control'}}) }}
+</div>
+
+{{ form_end(form) }}
+    </div>
+
+    <!-- Modal pour créer un nouvel ingrédient -->
+    <div class="modal fade" id="createIngredientModal" tabindex="-1" aria-labelledby="createIngredientModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="createIngredientModalLabel">Créer un nouvel Ingrédient</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="container mt-4">
+        <h1 class="text-center">Créer un nouvel Ingrédient</h1>
+        <div class="card p-4 shadow-sm">
+            {{ include('ingredient/_form.html.twig') }}
+            <a href="{{ path('app_ingredient_index') }}" class="btn btn-secondary mt-3">
+                <i class="fa-solid fa-arrow-left"></i> Retour à la liste
+            </a>
+        </div>
+    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fermer</button>
+                    <button type="button" class="btn btn-primary" id="saveNewIngredient">Enregistrer</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+{% endblock %}
+{% block javascripts %}
+
+
+{{ parent() }}
+
+{% endblock %}

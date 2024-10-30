@@ -1,0 +1,15 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Nouvel Ingrédient{% endblock %}
+
+{% block body %}
+    <div class="container mt-4">
+        <h1 class="text-center">Créer un nouvel Ingrédient</h1>
+        <div class="card p-4 shadow-sm">
+            {{ include('ingredient/_form.html.twig') }}
+            <a href="{{ path('app_ingredient_index') }}" class="btn btn-secondary mt-3">
+                <i class="fa-solid fa-arrow-left"></i> Retour à la liste
+            </a>
+        </div>
+    </div>
+{% endblock %}

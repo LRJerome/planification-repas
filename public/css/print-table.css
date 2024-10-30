@@ -1,0 +1,51 @@
+@media print {
+    /* Masquer les éléments non nécessaires */
+    .no-print, .btn, .navbar, .footer {
+        display: none !important;
+    }
+
+    body {
+        font-size: 10pt; /* Taille de police pour le tableau */
+        line-height: 1.2;
+    }
+
+    /* Configuration de la page pour le tableau */
+    @page {
+        size: landscape; /* Format paysage */
+        margin: 0.5cm;   /* Marges */
+    }
+
+    /* Formater le tableau pour l'impression */
+    .table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 9pt; /* Réduire la taille de la police dans le tableau */
+        page-break-inside: avoid;
+    }
+
+    .table th, .table td {
+        border: 1px solid #000;
+        padding: 4px; /* Ajuster le padding des cellules */
+    }
+
+    /* Afficher toutes les colonnes */
+    .d-none {
+        display: table-cell !important;
+    }
+
+    /* Ajuster la largeur des colonnes */
+    .table th, .table td {
+        width: auto; /* Ajustement automatique selon le contenu */
+    }
+
+    /* Réduire la taille du texte dans les cellules si nécessaire */
+    .table .text-truncate {
+        max-width: none;
+        white-space: normal;
+    }
+
+    /* Cacher les boutons dans les cellules */
+    .table .btn {
+        display: none !important;
+    }
+}

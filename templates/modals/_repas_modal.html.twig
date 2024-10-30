@@ -1,0 +1,24 @@
+{# <div class="modal fade" id="modalRepas{{ repas.id }}" tabindex="-1" aria-labelledby="modalLabel{{ repas.id }}" aria-hidden="true">
+  <div class="modal-dialog modal-lg"> <!-- Utilisation de modal-lg pour un modal large -->
+    <div class="modal-content">
+      <div class="modal-header">
+        {# <h5 class="modal-title" id="modalLabel{{ repas.id }}">{{ repas.nom }}</h5> #}
+        {# <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button> #}
+      {# </div> #}
+      {# <div class="modal-body"> #}
+        {# <h6 class="fw-bold mb-3">Recette :</h6> #}
+        {# <p>{{ repas.recette }}</p> #}
+
+        <h6 class="fw-bold mb-3">Ingrédients :</h6>
+        <ul class="list-group list-group-flush">
+            {# {% for ingredient in repas.ingredients %} #}
+                <li class="list-group-item d-flex justify-content-between align-items-center">
+                    {# {{ ingredient.nom }} #}
+                    {# <span class="badge bg-primary rounded-pill">{{ ingredient.quantite }} {{ ingredient.unite }}</span> #}
+                </li>
+            {# {% endfor %} #}
+        </ul>
+      </div>
+    </div>
+  </div>
+{# </div> #}

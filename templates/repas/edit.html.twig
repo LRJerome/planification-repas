@@ -1,0 +1,89 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Modifier {{ repas.nom }}{% endblock %}
+
+{% block body %}
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <h1 class="text-center mb-4">Modifier {{ repas.nom }}</h1>
+
+            <div class="card shadow">
+                <div class="card-body">
+                    {{ form_start(form, {'attr': {'class': 'needs-validation', 'novalidate': 'novalidate'}}) }}
+                    
+                    <div class="mb-3">
+                        {{ form_label(form.nom, 'Nom du repas', {'label_attr': {'class': 'form-label'}}) }}
+                        {{ form_widget(form.nom, {'attr': {'class': 'form-control'}}) }}
+                        {{ form_errors(form.nom) }}
+                    </div>
+
+                    <div class="mb-3">
+                        {{ form_label(form.categorie, 'Catégorie', {'label_attr': {'class': 'form-label'}}) }}
+                        {{ form_widget(form.categorie, {'attr': {'class': 'form-select'}}) }}
+                        {{ form_errors(form.categorie) }}
+                    </div>
+
+                    <div class="mb-3">
+                        {{ form_label(form.description, 'Description', {'label_attr': {'class': 'form-label'}}) }}
+                        {{ form_widget(form.description, {'attr': {'class': 'form-control', 'rows': '3'}}) }}
+                        {{ form_errors(form.description) }}
+                    </div>
+
+                    <div class="mb-3">
+                        {{ form_label(form.recette, 'Recette', {'label_attr': {'class': 'form-label'}}) }}
+                        {{ form_widget(form.recette, {'attr': {'class': 'form-control', 'rows': '5'}}) }}
+                        {{ form_errors(form.recette) }}
+                    </div>
+
+                    {% if form.ingredientQuantites is defined %}
+                        <div class="mb-3">
+                            <h4>Ingrédients</h4>
+                            <div id="ingredient-list" 
+                                 data-prototype="{{ form_widget(form.ingredientQuantites.vars.prototype)|e('html_attr') }}">
+                                {% for ingredientQuantiteField in form.ingredientQuantites %}
+                                    <div class="ingredient-item mb-2">
+                                        <div class="row">
+                                            <div class="col-md-6">
+                                                {{ form_widget(ingredientQuantiteField.ingredient, {'attr': {'class': 'form-select'}}) }}
+                                            </div>
+                                            <div class="col-md-4">
+                                                {{ form_widget(ingredientQuantiteField.quantite, {'attr': {'class': 'form-control', 'placeholder': 'Quantité'}}) }}
+                                            </div>
+                                            <div class="col-md-2">
+                                                <button type="button" class="btn btn-danger btn-sm remove-ingredient">Supprimer</button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                {% endfor %}
+                            </div>
+                            <button type="button" class="btn btn-secondary mt-2" id="add-ingredient">Ajouter un ingrédient</button>
+                        </div>
+                    {% endif %}
+
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn btn-primary">Enregistrer les modifications</button>
+                    </div>
+
+                    {{ form_end(form) }}
+                </div>
+            </div>
+
+            <div class="d-flex justify-content-between mt-4">
+                <a href="{{ path('repas_index') }}" class="btn btn-outline-secondary">
+                    <i class="fas fa-arrow-left me-2"></i>Retour à la liste
+                </a>
+                {{ include('repas/_delete_form.html.twig') }}
+            </div>
+        </div>
+    </div>
+</div>
+<script src="{{ asset('/js/javascript.js') }}"></script>
+{% endblock %}
+
+{% block javascripts %}
+
+
+{{ parent() }}
+
+{% endblock %}

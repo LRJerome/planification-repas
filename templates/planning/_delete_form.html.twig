@@ -1,0 +1,5 @@
+{# templates/planning/_delete_form.html.twig #}
+<form method="post" action="{{ path('planning_delete', {'id': planning.id}) }}" onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer ce planning ?');">
+    <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ planning.id) }}">
+    <button type="submit">Supprimer</button>
+</form>

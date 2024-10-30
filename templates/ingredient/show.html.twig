@@ -1,0 +1,36 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Détails de l'Ingrédient{% endblock %}
+
+{% block body %}
+    <div class="container mt-4">
+        <h1 class="text-center">Détails de l'Ingrédient</h1>
+        <div class="card p-4 shadow-sm">
+            <table class="table table-bordered">
+                <tbody>
+                    <tr>
+                        <th>Nom</th>
+                        <td>{{ ingredient.nom }}</td>
+                    </tr>
+                    <tr>
+                        <th>Quantité par défaut</th>
+                        <td>{{ ingredient.quantiteDefaut }}</td>
+                    </tr>
+                    <tr>
+                        <th>Unité</th>
+                        <td>{{ ingredient.unite }}</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <a href="{{ path('app_ingredient_index') }}" class="btn btn-secondary">
+                <i class="fa-solid fa-arrow-left"></i> Retour à la liste
+            </a>
+            <a href="{{ path('app_ingredient_edit', {'id': ingredient.id}) }}" class="btn btn-warning">
+                <i class="fa-solid fa-edit"></i> Modifier
+            </a>
+
+            {{ include('ingredient/_delete_form.html.twig', {'ingredient': ingredient}) }}
+        </div>
+    </div>
+{% endblock %}

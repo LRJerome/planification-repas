@@ -1,0 +1,16 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Modifier Ingrédient{% endblock %}
+
+{% block body %}
+    <div class="container mt-4">
+        <h1 class="text-center">Modifier Ingrédient</h1>
+        <div class="card p-4 shadow-sm">
+            {{ include('ingredient/_form.html.twig', {'button_label': 'Mettre à jour'}) }}
+            <a href="{{ path('app_ingredient_index') }}" class="btn btn-secondary mt-3">
+                <i class="fa-solid fa-arrow-left"></i> Retour à la liste
+            </a>
+            {{ include('ingredient/_delete_form.html.twig', {'ingredient': ingredient}) }}
+        </div>
+    </div>
+{% endblock %}

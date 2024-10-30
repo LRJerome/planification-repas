@@ -1,0 +1,80 @@
+{# templates/planning/semaine.html.twig #}
+{% extends 'base.html.twig' %}
+
+{% block title %}Planificateur de Repas Hebdomadaire{% endblock %}
+
+{% block body %}
+<div class="container mt-4">
+    <h1 class="text-center mb-4">Planificateur de Repas Hebdomadaire</h1>
+
+    <nav class="mb-4">
+        <ul class="nav nav-pills justify-content-center">
+            <li class="nav-item">
+                <a class="nav-link active" href="{{ path('planning_index') }}">Planning</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="{{ path('liste_courses_index') }}">Liste de Courses</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="{{ path('recettes_index') }}">Recettes</a>
+            </li>
+        </ul>
+    </nav>
+
+    <h2 class="text-center mb-3">Planning de la Semaine</h2>
+
+    <div class="table-responsive">
+        <table class="table table-bordered table-hover text-center">
+            <thead class="table-dark">
+                <tr>
+                    <th scope="col">Jour</th>
+                    <th scope="col">Petit Déjeuner</th>
+                    <th scope="col">En-cas Matin</th>
+                    <th scope="col">Déjeuner</th>
+                    <th scope="col">En-cas Après-midi</th>
+                    <th scope="col">Dîner</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for jour in ['Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi', 'Dimanche'] %}
+                    <tr>
+                        <th scope="row">{{ jour }}</th>
+                        {% for repas in ['petitDejeuner', 'encasMatin', 'dejeuner', 'encasApresMidi', 'diner'] %}
+                            <td>
+                                {% if plannings[jour] is defined and plannings[jour][repas] is defined %}
+                                    <strong>{{ plannings[jour][repas].nom }}</strong><br>
+                                    <small>{{ plannings[jour][repas].nombrePersonnes }} personnes</small>
+                                {% else %}
+                                    -
+                                {% endif %}
+                            </td>
+                        {% endfor %}
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <h2 class="text-center mb-3">Liste de Courses</h2>
+    <ul class="list-group mb-4">
+        {% for item in listeCourses %}
+            <li class="list-group-item">{{ item.quantite }} {{ item.unite }} {{ item.nom }}</li>
+        {% endfor %}
+    </ul>
+
+    <h2 class="text-center mb-3">Recettes</h2>
+    <div class="row">
+        {% for recette in recettes %}
+            <div class="col-md-4 mb-3">
+                <div class="card shadow-sm">
+                    <div class="card-body">
+                        <h5 class="card-title">{{ recette.nom }}</h5>
+                        <p class="card-text"><strong>Type :</strong> {{ recette.type }}</p>
+                        <a href="{{ path('recette_show', {'id': recette.id}) }}" class="btn btn-primary">Voir la recette</a>
+                    </div>
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

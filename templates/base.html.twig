@@ -1,17 +1,72 @@
 <!DOCTYPE html>
-<html>
-    <head>
-        <meta charset="UTF-8">
-        <title>{% block title %}Welcome!{% endblock %}</title>
-        <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 128 128%22><text y=%221.2em%22 font-size=%2296%22>⚫️</text><text y=%221.3em%22 x=%220.2em%22 font-size=%2276%22 fill=%22%23fff%22>sf</text></svg>">
-        {% block stylesheets %}
-        {% endblock %}
+<html lang="fr">
+	<head>
+		<meta charset="UTF-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+		<title>
+			{% block title %}Planification de Repas
+			{% endblock %}
+		</title>
 
-        {% block javascripts %}
-            {% block importmap %}{{ importmap('app') }}{% endblock %}
-        {% endblock %}
-    </head>
-    <body>
-        {% block body %}{% endblock %}
-    </body>
-</html>
+		{# inclusion de Font Awesome  #}
+		<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+		<!-- Bootstrap CSS -->
+		<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+		<link rel="stylesheet" href="{{ asset('css/app.css') }}">
+		<link rel="stylesheet" href="{{ asset('css/print.css') }}">
+        <link rel="stylesheet" href="{{ asset('css/print-table.css') }}">
+		
+
+	<!-- Custom Styles (if needed) -->
+
+	</head>
+	<body>
+		<!-- Navbar -->
+		<nav class="navbar navbar-expand-lg">
+			<div class="container-fluid">
+				<a class="navbar-brand" href="{{ path('planning_index') }}">Planification de Repas</a>
+				<button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+					<span class="navbar-toggler-icon"></span>
+				</button>
+				<div class="collapse navbar-collapse" id="navbarNav">
+					<ul class="navbar-nav ms-auto">
+						<li class="nav-item">
+							<a class="nav-link" href="{{ path('home') }}">Tous les repas</a>
+						</li>
+						<li class="nav-item">
+							<a class="nav-link" href="{{ path('liste_courses_index') }}">Liste de Courses</a>
+						</li>
+						<li class="nav-item">
+							<a class="nav-link" href="{{ path('repas_index') }}">Recettes</a>
+						</li>
+						<li class="nav-item">
+							<a class="nav-link" href="{{ path('app_ingredient_index') }}">Ingrédients</a>
+						</li>
+					</ul>
+				</div>
+			</div>
+		</nav>
+
+		<!-- Main Wrapper pour le contenu -->
+		<div class="content-wrapper">
+			<div class="container mt-4"> {% block body %}{% endblock %}
+				</div>
+			</div>
+
+			<!-- Footer (facultatif) -->
+			<footer class="text-center mt-4 mb-4 " id="footer">
+				<p>&copy;
+					{{ "now"|date("Y") }}
+					Planification de Repas - Tous droits réservés.</p>
+			</footer>
+
+			<!-- Bootstrap JS -->
+			<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+
+			<!-- Fichier JavaScript personnalisé -->
+			<script src="{{ asset('/js/javascript.js') }}"></script>
+
+			{% block javascripts %}{% endblock %}
+		</body>
+	</html>

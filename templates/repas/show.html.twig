@@ -1,0 +1,47 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Détails du Repas{% endblock %}
+
+{% block body %}
+<div class="container mt-4">
+    <h1 class="text-center mb-4">{{ repas.nom }}</h1>
+
+    <div class="card mb-4 shadow-sm">
+        <div class="card-body">
+            <h5 class="card-title">Informations générales</h5>
+            <p><strong>Catégorie :</strong> {{ repas.categorie|replace({'_': ' '})|capitalize }}</p>
+            <p><strong>Description :</strong> {{ repas.description }}</p>
+        </div>
+    </div>
+
+    <div class="card mb-4 shadow-sm">
+        <div class="card-body">
+            <h5 class="card-title">Recette</h5>
+            <p>{{ repas.recette|nl2br }}</p>
+        </div>
+    </div>
+
+    <div class="card mb-4 shadow-sm">
+        <div class="card-body">
+            <h5 class="card-title">Ingrédients</h5>
+            <ul class="list-group list-group-flush">
+                {% for ingredient in repas.ingredients %}
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                        {{ ingredient.nom }}
+                        <span class="badge bg-primary rounded-pill">{{ ingredient.quantiteDefaut }} {{ ingredient.unite }}</span>
+                    </li>
+                {% else %}
+                    <li class="list-group-item">Aucun ingrédient listé.</li>
+                {% endfor %}
+            </ul>
+        </div>
+    </div>
+
+    <div class="d-flex justify-content-between mt-3">
+        <a href="{{ path('repas_index') }}" class="btn btn-secondary">Retour à la liste</a>
+        <a href="{{ path('repas_edit', {'id': repas.id}) }}" class="btn btn-primary">Modifier</a>
+    </div>
+
+    {{ include('repas/_delete_form.html.twig') }}
+</div>
+{% endblock %}

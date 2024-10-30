@@ -1,0 +1,50 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Recettes{% endblock %}
+
+{% block body %}
+<div class="container mt-4">
+    <h1 class="text-center mb-4">Liste des Recettes</h1>
+
+    <div class="d-flex justify-content-between mb-3">
+        <a href="{{ path('repas_new') }}" class="btn btn-success">Ajouter une recette</a>
+
+        <form action="{{ path('repas_index') }}" method="get" class="d-flex align-items-center">
+            <div class="d-flex flex-wrap me-3">
+                {% for category in categories %}
+                    <div class="form-check form-switch me-2 mb-2">
+                        <input class="form-check-input" type="checkbox" id="{{ category }}" name="categories[]" value="{{ category }}"
+                                {% if category in selectedCategories %}checked{% endif %}>
+                        <label class="form-check-label" for="{{ category }}">
+                            {{ category|replace({'_': ' '})|capitalize }}
+                        </label>
+                    </div>
+                {% endfor %}
+            </div>
+            <button type="submit" class="btn btn-primary">Filtrer</button>
+        </form>
+    </div>
+
+    <div class="row">
+        {% for repas in repas %}
+            <div class="col-lg-4 col-md-6 mb-4">
+                <div class="card shadow-sm h-100">
+                    <div class="card-body d-flex flex-column">
+                        <h5 class="card-title">{{ repas.nom }}</h5>
+                        <h6 class="card-subtitle mb-2 text-muted">{{ repas.categorie|replace({'_': ' '})|capitalize }}</h6>
+                        <p class="card-text flex-grow-1">{{ repas.description|slice(0, 100) }}...</p>
+                        <div class="d-flex justify-content-between mt-3">
+                            <a href="{{ path('repas_show', {'id': repas.id}) }}" class="btn btn-sm btn-outline-info">Voir détails</a>
+                            <a href="{{ path('repas_edit', {'id': repas.id}) }}" class="btn btn-sm btn-outline-warning">Modifier</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        {% else %}
+            <div class="col-12">
+                <p class="text-center text-muted">Aucune recette trouvée.</p>
+            </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

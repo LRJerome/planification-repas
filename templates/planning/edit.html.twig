@@ -1,0 +1,17 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Modifier le planning{% endblock %}
+
+{% block body %}
+    <h1>Modifier le planning</h1>
+    
+    {{ form_start(form) }}
+        {{ form_widget(form) }}
+        <button type="submit">Enregistrer les modifications</button>
+    {{ form_end(form) }}
+    
+    <a href="{{ path('planning_index') }}">Retour à la liste</a>
+    
+    {{ include('planning/_delete_form.html.twig') }}
+    <script src="{{ asset('/js/javascript.js') }}"></script>
+{% endblock %}

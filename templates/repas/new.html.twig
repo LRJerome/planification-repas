@@ -1,0 +1,67 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Nouveau Repas{% endblock %}
+
+{% block body %}
+<div class="container mt-4">
+    <h1 class="text-center mb-4">Créer votre nouvelle recette</h1>
+
+    <div class="card shadow-sm mb-4">
+        <div class="card-body">
+            {{ form_start(form) }}
+
+            <div class="mb-3">
+                {{ form_row(form.nom, {'attr': {'class': 'form-control', 'placeholder': 'Nom du repas'}}) }}
+            </div>
+            <div class="mb-3">
+                {{ form_row(form.categorie, {'attr': {'class': 'form-select', 'placeholder': 'Catégorie'}}) }}
+            </div>
+            <div class="mb-3">
+                {{ form_row(form.description, {'attr': {'class': 'form-control', 'rows': '4', 'placeholder': 'Description du repas'}}) }}
+            </div>
+            <div class="mb-3">
+                {{ form_row(form.recette, {'attr': {'class': 'form-control', 'rows': '6', 'placeholder': 'Détails de la recette'}}) }}
+            </div>
+
+            <div class="mb-3">
+                <h3 class="text-center">Ingrédients</h3>
+                <div id="ingredient-list" 
+                     data-prototype="{{ form_widget(form.ingredientQuantites.vars.prototype)|e('html_attr') }}">
+                    {% for ingredientQuantiteField in form.ingredientQuantites %}
+                        <div class="ingredient-item card mb-3 p-3 shadow-sm">
+                            <div class="row">
+                                <div class="col-md-6 mb-2">
+                                    {{ form_row(ingredientQuantiteField.ingredient, {'attr': {'class': 'form-control', 'placeholder': 'Ingrédient'}}) }}
+                                </div>
+                                <div class="col-md-4 mb-2">
+                                    {{ form_row(ingredientQuantiteField.quantite, {'attr': {'class': 'form-control', 'placeholder': 'Quantité'}}) }}
+                                </div>
+                                <div class="col-md-2 d-flex align-items-center">
+                                    <button type="button" class="btn btn-danger remove-ingredient">Supprimer</button>
+                                </div>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+                <div class="d-flex justify-content-center">
+                    <button type="button" class="btn btn-secondary mt-2" id="add-ingredient">
+                        <i class="fa fa-plus"></i> Ajouter un ingrédient
+                    </button>
+                </div>
+            </div>
+
+            <button class="btn btn-primary w-100 mt-3">{{ button_label|default('Enregistrer') }}</button>
+            {{ form_end(form) }}
+        </div>
+    </div>
+
+    <div class="text-center">
+        <a href="{{ path('repas_index') }}" class="btn btn-secondary mt-3">Retour à la liste</a>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block javascripts %}
+
+{% endblock %}
