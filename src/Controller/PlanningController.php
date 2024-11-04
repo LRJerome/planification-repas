@@ -4,128 +4,70 @@ namespace App\Controller;
 
 use App\Entity\Planning;
 use App\Form\PlanningType;
+use Psr\Log\LoggerInterface;
+use App\Repository\RepasRepository;
 use App\Repository\PlanningRepository;
 use Doctrine\ORM\EntityManagerInterface;
-use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
-use Symfony\Component\Form\Extension\Core\Type\DateType;
-use Symfony\Component\Form\Extension\Core\Type\SubmitType;
-use Psr\Log\LoggerInterface;
+use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 
-#[Route('/planning')]
+#[Route('/planning', name: 'planning_')]
 class PlanningController extends AbstractController
 {
-    private $logger;
+    private LoggerInterface $logger;
+    private EntityManagerInterface $entityManager;
+    private PlanningRepository $planningRepository;
 
-    public function __construct(LoggerInterface $logger)
-    {
+    public function __construct(
+        LoggerInterface $logger, 
+        EntityManagerInterface $entityManager,
+        PlanningRepository $planningRepository
+    ) {
         $this->logger = $logger;
+        $this->entityManager = $entityManager;
+        $this->planningRepository = $planningRepository;
     }
 
-    #[Route('/', name: 'planning_index', methods: ['GET', 'POST'])]
-    public function index(Request $request, PlanningRepository $planningRepository): Response
+    #[Route('/', name: 'index', methods: ['GET'])]
+    public function index(PlanningRepository $planningRepository): Response
     {
         $today = new \DateTime();
-        $endDate = (new \DateTime())->modify('+7 days');
-
-        $form = $this->createFormBuilder()
-            ->add('dateDebut', DateType::class, [
-                'widget' => 'single_text',
-                'label' => 'Date de début',
-                'data' => $today,
-            ])
-            ->add('dateFin', DateType::class, [
-                'widget' => 'single_text',
-                'label' => 'Date de fin',
-                'data' => $endDate,
-            ])
-            ->add('submit', SubmitType::class, ['label' => 'Rechercher'])
-            ->getForm();
-
-        $form->handleRequest($request);
-
-        if ($form->isSubmitted() && $form->isValid()) {
-            $data = $form->getData();
-            $dateDebut = $data['dateDebut'];
-            $dateFin = $data['dateFin'];
-        } else {
-            $dateDebut = $today;
-            $dateFin = $endDate;
-        }
-
-        // S'assurer que la date de début est bien le début de la journée
-        $dateDebut->setTime(0, 0, 0);
-        // S'assurer que la date de fin est bien la fin de la journée
-        $dateFin->setTime(23, 59, 59);
-
-        $this->logger->info('Recherche de plannings entre : ' . $dateDebut->format('Y-m-d H:i:s') . ' et ' . $dateFin->format('Y-m-d H:i:s'));
-
-        $plannings = $planningRepository->findByDateRange($dateDebut, $dateFin);
-
-        $this->logger->info('Nombre de plannings trouvés : ' . count($plannings));
-
-        $planningsByDate = $this->organizePlanningsByDate($plannings, $dateDebut, $dateFin);
-
-        return $this->render('planning/index.html.twig', [
-            'planningsByDate' => $planningsByDate,
-            'form' => $form->createView(),
-        ]);
-    }
-
-    private function organizePlanningsByDate(array $plannings, \DateTime $dateDebut, \DateTime $dateFin): array
-    {
-        $planningsByDate = [];
-        $currentDate = clone $dateDebut;
-
-        while ($currentDate <= $dateFin) {
-            $dateKey = $currentDate->format('Y-m-d');
-            $planningsByDate[$dateKey] = [
+        $today->setTime(0, 0, 0);
+        $endDate = (clone $today)->modify('+7 days')->setTime(23, 59, 59);
+        
+        $plannings = [];
+        $currentDate = clone $today;
+        
+        while ($currentDate <= $endDate) {
+            $planning = $planningRepository->findOneByDateWithMeals($currentDate);
+            
+            $dateInfo = [
                 'date' => clone $currentDate,
-                'petitDejeuner' => null,
-                'nombrePersonnesPetitDejeuner' => null,
-                'encasMatin' => null,
-                'nombrePersonnesEncasMatin' => null,
-                'dejeuner' => null,
-                'nombrePersonnesDejeuner' => null,
-                'encasApresMidi' => null,
-                'nombrePersonnesEncasApresMidi' => null,
-                'diner' => null,
-                'nombrePersonnesDiner' => null
+                'planning' => $planning
             ];
+            
+            $plannings[] = $dateInfo;
             $currentDate->modify('+1 day');
         }
 
-        foreach ($plannings as $planning) {
-            $dateKey = $planning->getDate()->format('Y-m-d');
-            if (isset($planningsByDate[$dateKey])) {
-                $planningsByDate[$dateKey]['petitDejeuner'] = $planning->getPetitDejeuner();
-                $planningsByDate[$dateKey]['nombrePersonnesPetitDejeuner'] = $planning->getNombrePersonnesPetitDejeuner();
-                $planningsByDate[$dateKey]['encasMatin'] = $planning->getEncasMatin();
-                $planningsByDate[$dateKey]['nombrePersonnesEncasMatin'] = $planning->getNombrePersonnesEncasMatin();
-                $planningsByDate[$dateKey]['dejeuner'] = $planning->getDejeuner();
-                $planningsByDate[$dateKey]['nombrePersonnesDejeuner'] = $planning->getNombrePersonnesDejeuner();
-                $planningsByDate[$dateKey]['encasApresMidi'] = $planning->getEncasApresMidi();
-                $planningsByDate[$dateKey]['nombrePersonnesEncasApresMidi'] = $planning->getNombrePersonnesEncasApresMidi();
-                $planningsByDate[$dateKey]['diner'] = $planning->getDiner();
-                $planningsByDate[$dateKey]['nombrePersonnesDiner'] = $planning->getNombrePersonnesDiner();
-            }
-        }
-
-        return $planningsByDate;
+        return $this->render('planning/index.html.twig', [
+            'plannings' => $plannings,
+        ]);
     }
 
-    #[Route('/new', name: 'planning_new', methods: ['GET', 'POST'])]
-    public function new(Request $request, EntityManagerInterface $entityManager): Response
+
+    #[Route('/new', name: 'new', methods: ['GET', 'POST'])]
+    public function new(Request $request): Response
     {
         $planning = new Planning();
         $form = $this->createForm(PlanningType::class, $planning);
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
-            $entityManager->persist($planning);
-            $entityManager->flush();
+            $this->entityManager->persist($planning);
+            $this->entityManager->flush();
 
             $this->addFlash('success', 'Le planning a été créé avec succès.');
             return $this->redirectToRoute('planning_index');
@@ -137,22 +79,14 @@ class PlanningController extends AbstractController
         ]);
     }
 
-    #[Route('/{id}', name: 'planning_show', methods: ['GET'])]
-    public function show(Planning $planning): Response
-    {
-        return $this->render('planning/show.html.twig', [
-            'planning' => $planning,
-        ]);
-    }
-
-    #[Route('/{id}/edit', name: 'planning_edit', methods: ['GET', 'POST'])]
-    public function edit(Request $request, Planning $planning, EntityManagerInterface $entityManager): Response
+    #[Route('/{id}/edit', name: 'edit', methods: ['GET', 'POST'])]
+    public function edit(Request $request, Planning $planning): Response
     {
         $form = $this->createForm(PlanningType::class, $planning);
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
-            $entityManager->flush();
+            $this->entityManager->flush();
 
             $this->addFlash('success', 'Le planning a été mis à jour avec succès.');
             return $this->redirectToRoute('planning_index', [], Response::HTTP_SEE_OTHER);
@@ -164,16 +98,98 @@ class PlanningController extends AbstractController
         ]);
     }
 
-    #[Route('/{id}', name: 'planning_delete', methods: ['POST'])]
-    public function delete(Request $request, Planning $planning, EntityManagerInterface $entityManager): Response
+    #[Route('/{id}', name: 'delete', methods: ['POST'])]
+    public function delete(Request $request, Planning $planning): Response
     {
         if ($this->isCsrfTokenValid('delete'.$planning->getId(), $request->request->get('_token'))) {
-            $entityManager->remove($planning);
-            $entityManager->flush();
+            $this->entityManager->remove($planning);
+            $this->entityManager->flush();
 
             $this->addFlash('success', 'Le planning a été supprimé avec succès.');
         }
 
         return $this->redirectToRoute('planning_index', [], Response::HTTP_SEE_OTHER);
+    }
+
+    #[Route('/add-repas/{id}', name: 'add_repas', methods: ['POST'])]
+    public function addRepasToPlanning(
+        int $id, 
+        Request $request, 
+        RepasRepository $repasRepository
+    ): Response {
+        $date = new \DateTime($request->request->get('date'));
+        $type = $request->request->get('type');
+        $nombrePersonnes = $request->request->get('nombrePersonnes');
+        $repas = $repasRepository->find($id);
+
+        if (!$repas) {
+            $this->addFlash('error', 'Recette introuvable.');
+            return $this->redirectToRoute('repas_show', ['id' => $id]);
+        }
+
+        // Vérifie s'il y a déjà un planning pour cette date
+        $planning = $this->planningRepository->findOneByDate($date);
+
+        if (!$planning) {
+            $planning = new Planning();
+            $planning->setDate($date);
+        }
+
+        // Ajoute le repas et le nombre de personnes en fonction du type sélectionné
+        switch ($type) {
+            case 'petitDejeuner':
+                $planning->setPetitDejeuner($repas);
+                $planning->setNombrePersonnesPetitDejeuner($nombrePersonnes);
+                break;
+            case 'encasMatin':
+                $planning->setEncasMatin($repas);
+                $planning->setNombrePersonnesEncasMatin($nombrePersonnes);
+                break;
+            case 'dejeuner':
+                $planning->setDejeuner($repas);
+                $planning->setNombrePersonnesDejeuner($nombrePersonnes);
+                break;
+            case 'encasApresMidi':
+                $planning->setEncasApresMidi($repas);
+                $planning->setNombrePersonnesEncasApresMidi($nombrePersonnes);
+                break;
+            case 'diner':
+                $planning->setDiner($repas);
+                $planning->setNombrePersonnesDiner($nombrePersonnes);
+                break;
+            default:
+                $this->addFlash('error', 'Type de repas invalide.');
+                return $this->redirectToRoute('repas_show', ['id' => $id]);
+        }
+
+        $this->entityManager->persist($planning);
+        $this->entityManager->flush();
+
+        $this->addFlash('success', 'Recette ajoutée au planning.');
+        return $this->redirectToRoute('index');
+    }
+
+    public function findOneByDate(\DateTimeInterface $date): ?Planning
+    {
+        // Validation de la date
+        if ($date < new \DateTime('2000-01-01') || $date > new \DateTime('+1 year')) {
+            throw new \InvalidArgumentException('Date invalide');
+        }
+        try {
+            return $this->planningRepository->createQueryBuilder('p')
+                ->leftJoin('p.petitDejeuner', 'pd')
+                ->leftJoin('p.encasMatin', 'em')
+                ->leftJoin('p.dejeuner', 'd')
+                ->leftJoin('p.encasApresMidi', 'ea')
+                ->leftJoin('p.diner', 'di')
+                ->addSelect('pd', 'em', 'd', 'ea', 'di')
+                ->andWhere('p.date = :date')
+                ->setParameter('date', $date->format('Y-m-d'))
+                ->getQuery()
+                ->getOneOrNullResult();
+        } catch (\Exception $e) {
+            // Log l'erreur
+            throw new \RuntimeException('Erreur lors de la récupération du planning', 0, $e);
+        }
     }
 }

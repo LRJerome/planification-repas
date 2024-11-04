@@ -7,25 +7,41 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use Doctrine\DBAL\Types\Types;
+use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity(repositoryClass: RepasRepository::class)]
 class Repas
 {
+    public const CATEGORIE_LOW_CARB = 'low_carb';
+    public const CATEGORIE_POST_TRAINING = 'post_training';
+    public const CATEGORIE_EN_CAS = 'en_cas';
+    public const CATEGORIE_AUTRE = 'autre';
+
+    public const CATEGORIES = [
+        self::CATEGORIE_LOW_CARB => 'Low-carb',
+        self::CATEGORIE_POST_TRAINING => 'Post-training',
+        self::CATEGORIE_EN_CAS => 'En-cas',
+        self::CATEGORIE_AUTRE => 'Autre'
+    ];
+
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
     private ?int $id = null;
 
     #[ORM\Column(length: 255)]
+    #[Assert\NotBlank(message: "Le nom est obligatoire")]
     private ?string $nom = null;
 
     #[ORM\Column(length: 255)]
+    #[Assert\NotBlank(message: "La catégorie est obligatoire")]
     private ?string $categorie = null;
 
     #[ORM\Column(type: 'text', nullable: true)]
     private ?string $description = null;
 
-    #[ORM\Column(type: 'text', nullable: true)]
+    #[ORM\Column(type: 'text')]
+    #[Assert\NotBlank(message: "La recette est obligatoire")]
     private ?string $recette = null;
 
     #[ORM\ManyToMany(targetEntity: Ingredient::class, inversedBy: 'repas')]
@@ -37,7 +53,9 @@ class Repas
     #[ORM\Column(length: 255, nullable: true)]
     private ?string $typeRepas = null;
 
-    private $ingredientQuantites;
+    #[ORM\OneToMany(mappedBy: 'repas', targetEntity: IngredientQuantite::class, cascade: ['persist', 'remove'], orphanRemoval: true)]
+    #[Assert\Count(min: 1, minMessage: "Vous devez ajouter au moins un ingrédient")]
+    private Collection $ingredientQuantites;
 
     public function __construct()
     {
@@ -140,15 +158,25 @@ class Repas
         return $this->ingredientQuantites;
     }
 
-    public function addIngredientQuantite($ingredientQuantite): self
+    public function addIngredientQuantite(IngredientQuantite $ingredientQuantite): self
     {
-        $this->ingredientQuantites[] = $ingredientQuantite;
+        if (!$this->ingredientQuantites->contains($ingredientQuantite)) {
+            $this->ingredientQuantites[] = $ingredientQuantite;
+            $ingredientQuantite->setRepas($this);
+        }
+
         return $this;
     }
 
-    public function removeIngredientQuantite($ingredientQuantite): self
+    public function removeIngredientQuantite(IngredientQuantite $ingredientQuantite): self
     {
-        $this->ingredientQuantites->removeElement($ingredientQuantite);
+        if ($this->ingredientQuantites->removeElement($ingredientQuantite)) {
+            // set the owning side to null (unless already changed)
+            if ($ingredientQuantite->getRepas() === $this) {
+                $ingredientQuantite->setRepas(null);
+            }
+        }
+
         return $this;
     }
 }

@@ -13,58 +13,88 @@ use Symfony\Component\OptionsResolver\OptionsResolver;
 
 class PlanningType extends AbstractType
 {
-    public function buildForm(FormBuilderInterface $builder, array $options)
+    public function buildForm(FormBuilderInterface $builder, array $options): void
     {
         $builder
             ->add('date', DateType::class, [
-                'label' => 'Date',
-                'widget' => 'single_text',
+                'widget' => 'single_text'
             ])
             ->add('petitDejeuner', EntityType::class, [
                 'class' => Repas::class,
                 'choice_label' => 'nom',
                 'required' => false,
+                'placeholder' => 'Choisir un repas',
+                'choice_attr' => function(Repas $repas) {
+                    return [
+                        'data-category' => $repas->getCategorie()
+                    ];
+                },
             ])
             ->add('nombrePersonnesPetitDejeuner', IntegerType::class, [
-                'label' => 'Nb personnes',
                 'required' => false,
+                'attr' => ['min' => 1]
             ])
             ->add('encasMatin', EntityType::class, [
                 'class' => Repas::class,
                 'choice_label' => 'nom',
                 'required' => false,
+                'placeholder' => 'Choisir un repas',
+                'choice_attr' => function(Repas $repas) {
+                    return [
+                        'data-category' => $repas->getCategorie()
+                    ];
+                },
             ])
             ->add('nombrePersonnesEncasMatin', IntegerType::class, [
-                'label' => 'Nb personnes',
                 'required' => false,
+                'attr' => ['min' => 1]
             ])
             ->add('dejeuner', EntityType::class, [
                 'class' => Repas::class,
                 'choice_label' => 'nom',
                 'required' => false,
+                'placeholder' => 'Choisir un repas',
+                'choice_attr' => function(Repas $repas) {
+                    return [
+                        'data-category' => $repas->getCategorie()
+                    ];
+                },
             ])
             ->add('nombrePersonnesDejeuner', IntegerType::class, [
-                'label' => 'Nb personnes',
                 'required' => false,
+                'attr' => ['min' => 1]
             ])
             ->add('encasApresMidi', EntityType::class, [
                 'class' => Repas::class,
                 'choice_label' => 'nom',
                 'required' => false,
+                'placeholder' => 'Choisir un repas',
+                'choice_attr' => function(Repas $repas) {
+                    return [
+                        'data-category' => $repas->getCategorie()
+                    ];
+                },
             ])
             ->add('nombrePersonnesEncasApresMidi', IntegerType::class, [
-                'label' => 'Nb personnes',
                 'required' => false,
+                'attr' => ['min' => 1]
             ])
             ->add('diner', EntityType::class, [
                 'class' => Repas::class,
                 'choice_label' => 'nom',
                 'required' => false,
+                'placeholder' => 'Choisir un repas',
+                'choice_attr' => function(Repas $repas) {
+                    return [
+                        'data-category' => $repas->getCategorie()
+                    ];
+                },
             ])
             ->add('nombrePersonnesDiner', IntegerType::class, [
-                'label' => 'Nb personnes',
                 'required' => false,
-            ]);
+                'attr' => ['min' => 1]
+            ])
+        ;
     }
 
     public function configureOptions(OptionsResolver $resolver): void

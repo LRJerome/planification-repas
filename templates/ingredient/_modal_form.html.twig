@@ -1,0 +1,22 @@
+<form id="newIngredientForm" class="form-group">
+    <div class="mb-3">
+        <label for="modal_ingredient_nom" class="form-label">Nom de l'ingrédient</label>
+        <input type="text" id="modal_ingredient_nom" class="form-control" required>
+    </div>
+
+    <div class="mb-3">
+        <label for="modal_ingredient_unite" class="form-label">Unité</label>
+        <select id="modal_ingredient_unite" class="form-select" required>
+            <option value="g">Grammes (g)</option>
+            <option value="ml">Millilitres (ml)</option>
+            <option value="unité">Unité</option>
+            <option value="cas">Cuillère à soupe</option>
+            <option value="cac">Cuillère à café</option>
+            <option value="piece">Pièce</option>
+        </select>
+    </div>
+
+    <button type="submit" class="btn btn-primary">
+        <i class="fa-solid fa-save"></i> Créer
+    </button>
+</form> 

@@ -1,0 +1,40 @@
+{# Ce template sera inclus dans new.html.twig et edit.html.twig #}
+<div class="card shadow-sm mb-4">
+    <div class="card-header bg-light d-flex justify-content-between align-items-center">
+        <h3 class="mb-0">
+            <i class="fas fa-list me-2"></i>Liste des ingrédients
+        </h3>
+        <a href="{{ path('ingredient_new') }}" class="btn btn-primary btn-sm" target="_blank" id="new-ingredient-btn">
+            <i class="fas fa-plus me-1"></i>Nouvel ingrédient
+        </a>
+    </div>
+    <div class="card-body">
+        <div class="ingredients-collection" data-prototype="{{ form_widget(form.ingredientQuantites.vars.prototype)|e('html_attr') }}">
+            {% for ingredientQuantiteField in form.ingredientQuantites %}
+                <div class="ingredient-row mb-3 row align-items-end">
+                    <div class="col-md-6">
+                        {{ form_row(ingredientQuantiteField.ingredient, {
+                            'label_attr': {'class': 'form-label'},
+                            'attr': {'class': 'form-select ingredient-select'}
+                        }) }}
+                    </div>
+                    <div class="col-md-4">
+                        {{ form_row(ingredientQuantiteField.quantite, {
+                            'label_attr': {'class': 'form-label'},
+                            'attr': {'class': 'form-control'}
+                        }) }}
+                    </div>
+                    <div class="col-md-2">
+                        <button type="button" class="btn btn-danger btn-sm remove-ingredient w-100">
+                            <i class="fas fa-trash me-1"></i>Supprimer
+                        </button>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+
+        <button type="button" class="btn btn-success mt-3" id="add-ingredient">
+            <i class="fas fa-plus me-1"></i>Ajouter un ingrédient
+        </button>
+    </div>
+</div>

@@ -1,89 +1,87 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Modifier {{ repas.nom }}{% endblock %}
+{% block title %}Modifier la recette{% endblock %}
 
 {% block body %}
-<div class="container mt-5">
-    <div class="row justify-content-center">
-        <div class="col-md-8">
-            <h1 class="text-center mb-4">Modifier {{ repas.nom }}</h1>
+<div class="container mt-4">
+    <h1 class="text-center mb-4">Modifier la recette</h1>
 
-            <div class="card shadow">
-                <div class="card-body">
-                    {{ form_start(form, {'attr': {'class': 'needs-validation', 'novalidate': 'novalidate'}}) }}
-                    
-                    <div class="mb-3">
-                        {{ form_label(form.nom, 'Nom du repas', {'label_attr': {'class': 'form-label'}}) }}
-                        {{ form_widget(form.nom, {'attr': {'class': 'form-control'}}) }}
-                        {{ form_errors(form.nom) }}
+    {{ form_start(form) }}
+        {# Informations générales #}
+        <div class="card shadow-sm mb-4">
+            <div class="card-header bg-light">
+                <h3 class="mb-0">
+                    <i class="fas fa-info-circle me-2"></i>Informations générales
+                </h3>
+            </div>
+            <div class="card-body">
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        {{ form_label(form.nom, 'Nom de la recette', {'label_attr': {'class': 'form-label fw-bold'}}) }}
+                        {{ form_widget(form.nom, {
+                            'attr': {
+                                'class': 'form-control',
+                                'placeholder': 'Entrez le nom de votre recette'
+                            }
+                        }) }}
                     </div>
-
-                    <div class="mb-3">
-                        {{ form_label(form.categorie, 'Catégorie', {'label_attr': {'class': 'form-label'}}) }}
-                        {{ form_widget(form.categorie, {'attr': {'class': 'form-select'}}) }}
-                        {{ form_errors(form.categorie) }}
+                    <div class="col-md-6">
+                        {{ form_label(form.categorie, 'Catégorie', {'label_attr': {'class': 'form-label fw-bold'}}) }}
+                        {{ form_widget(form.categorie, {
+                            'attr': {
+                                'class': 'form-select'
+                            }
+                        }) }}
                     </div>
-
-                    <div class="mb-3">
-                        {{ form_label(form.description, 'Description', {'label_attr': {'class': 'form-label'}}) }}
-                        {{ form_widget(form.description, {'attr': {'class': 'form-control', 'rows': '3'}}) }}
-                        {{ form_errors(form.description) }}
+                    <div class="col-12">
+                        {{ form_label(form.description, 'Description', {'label_attr': {'class': 'form-label fw-bold'}}) }}
+                        {{ form_widget(form.description, {
+                            'attr': {
+                                'class': 'form-control',
+                                'rows': '3',
+                                'placeholder': 'Décrivez brièvement votre recette'
+                            }
+                        }) }}
                     </div>
-
-                    <div class="mb-3">
-                        {{ form_label(form.recette, 'Recette', {'label_attr': {'class': 'form-label'}}) }}
-                        {{ form_widget(form.recette, {'attr': {'class': 'form-control', 'rows': '5'}}) }}
-                        {{ form_errors(form.recette) }}
-                    </div>
-
-                    {% if form.ingredientQuantites is defined %}
-                        <div class="mb-3">
-                            <h4>Ingrédients</h4>
-                            <div id="ingredient-list" 
-                                 data-prototype="{{ form_widget(form.ingredientQuantites.vars.prototype)|e('html_attr') }}">
-                                {% for ingredientQuantiteField in form.ingredientQuantites %}
-                                    <div class="ingredient-item mb-2">
-                                        <div class="row">
-                                            <div class="col-md-6">
-                                                {{ form_widget(ingredientQuantiteField.ingredient, {'attr': {'class': 'form-select'}}) }}
-                                            </div>
-                                            <div class="col-md-4">
-                                                {{ form_widget(ingredientQuantiteField.quantite, {'attr': {'class': 'form-control', 'placeholder': 'Quantité'}}) }}
-                                            </div>
-                                            <div class="col-md-2">
-                                                <button type="button" class="btn btn-danger btn-sm remove-ingredient">Supprimer</button>
-                                            </div>
-                                        </div>
-                                    </div>
-                                {% endfor %}
-                            </div>
-                            <button type="button" class="btn btn-secondary mt-2" id="add-ingredient">Ajouter un ingrédient</button>
-                        </div>
-                    {% endif %}
-
-                    <div class="d-grid gap-2">
-                        <button type="submit" class="btn btn-primary">Enregistrer les modifications</button>
-                    </div>
-
-                    {{ form_end(form) }}
                 </div>
             </div>
+        </div>
 
-            <div class="d-flex justify-content-between mt-4">
-                <a href="{{ path('repas_index') }}" class="btn btn-outline-secondary">
-                    <i class="fas fa-arrow-left me-2"></i>Retour à la liste
-                </a>
-                {{ include('repas/_delete_form.html.twig') }}
+        {# Liste des ingrédients #}
+        {{ include('repas/_ingredient_form.html.twig') }}
+
+        {# Instructions #}
+        <div class="card shadow-sm mb-4">
+            <div class="card-header bg-light">
+                <h3 class="mb-0">
+                    <i class="fas fa-book me-2"></i>Instructions de préparation
+                </h3>
+            </div>
+            <div class="card-body">
+                {{ form_label(form.recette, 'Instructions détaillées', {'label_attr': {'class': 'form-label fw-bold'}}) }}
+                {{ form_widget(form.recette, {
+                    'attr': {
+                        'class': 'form-control',
+                        'rows': '10',
+                        'placeholder': 'Détaillez les étapes de préparation de votre recette'
+                    }
+                }) }}
             </div>
         </div>
-    </div>
+
+        <div class="text-center mb-4">
+            <button type="submit" class="btn btn-primary btn-lg">
+                <i class="fas fa-save me-2"></i>Enregistrer les modifications
+            </button>
+            <a href="{{ path('index') }}" class="btn btn-secondary btn-lg ms-2">
+                <i class="fas fa-arrow-left me-2"></i>Retour à la liste
+            </a>
+        </div>
+    {{ form_end(form) }}
 </div>
-<script src="{{ asset('/js/javascript.js') }}"></script>
 {% endblock %}
 
 {% block javascripts %}
-
-
-{{ parent() }}
-
+    {{ parent() }}
+    <script src="{{ asset('js/ingredients.js') }}"></script>
 {% endblock %}

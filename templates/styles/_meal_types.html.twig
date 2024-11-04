@@ -1,0 +1,49 @@
+{% set mealTypeStyles %}
+<style>
+    /* Styles pour les badges de type de repas */
+    .meal-type-low_carb {
+        background-color: #d4edda !important;
+        color: #155724 !important;
+        border: 1px solid #c3e6cb !important;
+    }
+    
+    .meal-type-post_training {
+        background-color: #cce5ff !important;
+        color: #004085 !important;
+        border: 1px solid #b8daff !important;
+    }
+    
+    .meal-type-en_cas {
+        background-color: #fff3cd !important;
+        color: #856404 !important;
+        border: 1px solid #ffeeba !important;
+    }
+    
+    .meal-type-autre {
+        background-color: #f8f9fa !important;
+        color: #383d41 !important;
+        border: 1px solid #d6d8db !important;
+    }
+
+    /* Style commun pour tous les badges de type */
+    [class^="meal-type-"] {
+        display: inline-block;
+        padding: 0.4em 0.8em;
+        margin: 0.2em;
+        font-size: 0.75em;
+        font-weight: 600;
+        border-radius: 0.25rem;
+        text-align: center;
+    }
+
+    /* Styles spécifiques pour l'impression */
+    @media print {
+        [class^="meal-type-"] {
+            padding: 1px 3px;
+            margin: 1px;
+            font-size: 7pt;
+            border-width: 1px !important;
+        }
+    }
+</style>
+{% endset %} 

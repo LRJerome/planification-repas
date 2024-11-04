@@ -1,4 +1,5 @@
 <?php
+// src/Controller/ListeCoursesController.php
 
 namespace App\Controller;
 
@@ -6,7 +7,6 @@ use Psr\Log\LoggerInterface;
 use App\Entity\Ingredient;
 use App\Form\ListeCoursesType;
 use App\Form\DateSelectionType;
-use App\Form\IngredientQuantiteType;
 use App\Repository\PlanningRepository;
 use App\Repository\IngredientRepository;
 use Doctrine\ORM\EntityManagerInterface;
@@ -14,7 +14,6 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Form\Extension\Core\Type\SubmitType;
-use Symfony\Component\Form\Extension\Core\Type\CollectionType;
 use Symfony\Component\HttpFoundation\Session\SessionInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 
@@ -36,6 +35,9 @@ class ListeCoursesController extends AbstractController
             $planning = $planningRepository->findByDateRange($dateDebut, $dateFin);
             $listeCourses = $this->calculerListeCourses($planning, $ingredientRepository);
             
+            // Trier la liste par ordre alphabétique des noms d'ingrédients
+            ksort($listeCourses);
+
             $session->set('liste_courses', $listeCourses);
             $this->addFlash('success', 'La liste de courses a été générée avec succès.');
         }
@@ -55,6 +57,9 @@ class ListeCoursesController extends AbstractController
         $planning = $planningRepository->findByWeek(new \DateTime());
         $listeCourses = $this->calculerListeCourses($planning, $ingredientRepository);
         
+        // Trier la liste par ordre alphabétique des noms d'ingrédients
+        ksort($listeCourses);
+
         $session->set('liste_courses', $listeCourses);
 
         $this->addFlash('success', 'La liste de courses a été générée avec succès.');
@@ -91,6 +96,9 @@ class ListeCoursesController extends AbstractController
                     ];
                 }
             }
+            // Trier la liste par ordre alphabétique des noms d'ingrédients
+            ksort($newListeCourses);
+
             $session->set('liste_courses', $newListeCourses);
 
             $this->addFlash('success', 'La liste de courses a été mise à jour.');

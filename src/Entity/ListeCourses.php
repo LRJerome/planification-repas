@@ -24,7 +24,7 @@ class ListeCourses
     private ?bool $enStock = null;
 
     #[ORM\ManyToOne(targetEntity: Ingredient::class, inversedBy: 'listeCourses')]
-    #[ORM\JoinColumn(nullable: false, onDelete: "SET NULL")]
+    #[ORM\JoinColumn(nullable: true, onDelete: "SET NULL")]
     private ?Ingredient $ingredient = null;
 
     public function getId(): ?int

@@ -18,22 +18,19 @@ class Ingredient
     #[ORM\Column(length: 255, nullable: true)]
     private ?string $nom = null;
 
-    #[ORM\Column(length: 255, nullable: true)]
-    private ?string $quantiteDefaut = null;
+    #[ORM\Column(type: 'float', nullable: true)]
+    private ?float $quantiteDefaut = null;
 
     #[ORM\Column(length: 255, nullable: true)]
     private ?string $unite = null;
 
-    #[ORM\ManyToMany(targetEntity: Repas::class, mappedBy: 'ingredient')]
-    private Collection $repas;
-
-    #[ORM\OneToMany(mappedBy: 'ingredient', targetEntity: ListeCourses::class, cascade: ['persist', 'remove'])]
-    private Collection $listeCourses;
+    #[ORM\OneToMany(mappedBy: 'ingredient', targetEntity: IngredientQuantite::class)]
+    private Collection $ingredientQuantites;
 
     public function __construct()
     {
-        $this->repas = new ArrayCollection();
-        $this->listeCourses = new ArrayCollection();
+        $this->ingredientQuantites = new ArrayCollection();
+        $this->quantiteDefaut = 1.0;
     }
 
     public function getId(): ?int
@@ -46,22 +43,20 @@ class Ingredient
         return $this->nom;
     }
 
-    public function setNom(?string $nom): static
+    public function setNom(?string $nom): self
     {
         $this->nom = $nom;
-
         return $this;
     }
 
-    public function getQuantiteDefaut(): ?string
+    public function getQuantiteDefaut(): ?float
     {
         return $this->quantiteDefaut;
     }
 
-    public function setQuantiteDefaut(?string $quantiteDefaut): static
+    public function setQuantiteDefaut(?float $quantiteDefaut): self
     {
         $this->quantiteDefaut = $quantiteDefaut;
-
         return $this;
     }
 
@@ -70,60 +65,36 @@ class Ingredient
         return $this->unite;
     }
 
-    public function setUnite(?string $unite): static
+    public function setUnite(?string $unite): self
     {
         $this->unite = $unite;
-
         return $this;
     }
 
-    public function getRepas(): Collection
+    /**
+     * @return Collection<int, IngredientQuantite>
+     */
+    public function getIngredientQuantites(): Collection
     {
-        return $this->repas;
+        return $this->ingredientQuantites;
     }
 
-    public function addRepa(Repas $repa): static
+    public function addIngredientQuantite(IngredientQuantite $ingredientQuantite): self
     {
-        if (!$this->repas->contains($repa)) {
-            $this->repas->add($repa);
-            $repa->addIngredient($this);
+        if (!$this->ingredientQuantites->contains($ingredientQuantite)) {
+            $this->ingredientQuantites->add($ingredientQuantite);
+            $ingredientQuantite->setIngredient($this);
         }
-
         return $this;
     }
 
-    public function removeRepa(Repas $repa): static
+    public function removeIngredientQuantite(IngredientQuantite $ingredientQuantite): self
     {
-        if ($this->repas->removeElement($repa)) {
-            $repa->removeIngredient($this);
-        }
-
-        return $this;
-    }
-
-    public function getListeCourses(): Collection
-    {
-        return $this->listeCourses;
-    }
-
-    public function addListeCourse(ListeCourses $listeCourse): static
-    {
-        if (!$this->listeCourses->contains($listeCourse)) {
-            $this->listeCourses->add($listeCourse);
-            $listeCourse->setIngredient($this);
-        }
-
-        return $this;
-    }
-
-    public function removeListeCourse(ListeCourses $listeCourse): static
-    {
-        if ($this->listeCourses->removeElement($listeCourse)) {
-            if ($listeCourse->getIngredient() === $this) {
-                $listeCourse->setIngredient(null);
+        if ($this->ingredientQuantites->removeElement($ingredientQuantite)) {
+            if ($ingredientQuantite->getIngredient() === $this) {
+                $ingredientQuantite->setIngredient(null);
             }
         }
-
         return $this;
     }
 }

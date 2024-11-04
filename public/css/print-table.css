@@ -1,51 +1,85 @@
 @media print {
-    /* Masquer les éléments non nécessaires */
-    .no-print, .btn, .navbar, .footer {
-        display: none !important;
+    @page {
+        size: landscape;
+        margin: 1cm;
     }
 
     body {
-        font-size: 10pt; /* Taille de police pour le tableau */
+        margin: 0;
+        padding: 0;
+        font-size: 9pt;
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+    }
+
+    .container {
+        max-width: none;
+        width: 100%;
+        margin: 0;
+        padding: 0;
+    }
+
+    .no-print {
+        display: none !important;
+    }
+
+    .table {
+        width: 100%;
+        margin: 0;
+        border-collapse: collapse;
+    }
+
+    .table th,
+    .table td {
+        padding: 4px;
+        border: 1px solid #000;
+        text-align: center;
+        vertical-align: middle;
+    }
+
+    .table th {
+        font-weight: bold;
+        background-color: #f8f9fa !important;
+    }
+
+    .meal-info {
+        margin: 0;
+        padding: 0;
+    }
+
+    .meal-info strong {
+        display: block;
+        margin-bottom: 2px;
+    }
+
+    .meal-type-low_carb,
+    .meal-type-post_training,
+    .meal-type-en_cas,
+    .meal-type-autre {
+        display: inline-block;
+        padding: 1px 3px;
+        margin: 1px 0;
+        border: 1px solid #000;
+        font-size: 7pt;
         line-height: 1.2;
     }
 
-    /* Configuration de la page pour le tableau */
-    @page {
-        size: landscape; /* Format paysage */
-        margin: 0.5cm;   /* Marges */
+    .persons-count {
+        font-size: 8pt;
+        margin-top: 2px;
     }
 
-    /* Formater le tableau pour l'impression */
-    .table {
-        width: 100%;
-        border-collapse: collapse;
-        font-size: 9pt; /* Réduire la taille de la police dans le tableau */
+    .empty-meal {
+        color: #666;
+    }
+
+    h1 {
+        font-size: 14pt;
+        margin: 0 0 10px 0;
+        text-align: center;
+    }
+
+    .planning-content {
         page-break-inside: avoid;
-    }
-
-    .table th, .table td {
-        border: 1px solid #000;
-        padding: 4px; /* Ajuster le padding des cellules */
-    }
-
-    /* Afficher toutes les colonnes */
-    .d-none {
-        display: table-cell !important;
-    }
-
-    /* Ajuster la largeur des colonnes */
-    .table th, .table td {
-        width: auto; /* Ajustement automatique selon le contenu */
-    }
-
-    /* Réduire la taille du texte dans les cellules si nécessaire */
-    .table .text-truncate {
-        max-width: none;
-        white-space: normal;
-    }
-
-    /* Cacher les boutons dans les cellules */
-    .table .btn {
-        display: none !important;
     }
 }

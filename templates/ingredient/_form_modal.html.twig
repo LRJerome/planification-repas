@@ -1,0 +1,29 @@
+{# Ce template est pour le modal dans repas/new.html.twig #}
+<form id="newIngredientForm" onsubmit="return createIngredient(event)" class="needs-validation" novalidate>
+    <div class="mb-3">
+        <label for="ingredientNom" class="form-label">Nom de l'ingrédient</label>
+        <input type="text" class="form-control" id="ingredientNom" name="ingredient[nom]" required>
+        <div class="invalid-feedback">
+            Veuillez entrer un nom d'ingrédient
+        </div>
+    </div>
+    <div class="mb-3">
+        <label for="ingredientUnite" class="form-label">Unité de mesure</label>
+        <select class="form-control" id="ingredientUnite" name="ingredient[unite]" required>
+            <option value="">Choisir une unité</option>
+            <option value="g">Grammes (g)</option>
+            <option value="ml">Millilitres (ml)</option>
+            <option value="unité">Unité</option>
+            <option value="cas">Cuillère à soupe</option>
+            <option value="cac">Cuillère à café</option>
+            <option value="piece">Pièce</option>
+        </select>
+        <div class="invalid-feedback">
+            Veuillez sélectionner une unité
+        </div>
+    </div>
+    <div class="text-end">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+        <button type="submit" class="btn btn-primary">Créer l'ingrédient</button>
+    </div>
+</form> 

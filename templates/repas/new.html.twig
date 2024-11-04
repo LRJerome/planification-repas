@@ -1,67 +1,143 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Nouveau Repas{% endblock %}
+{% block title %}Nouvelle recette
+{% endblock %}
+{% block head %}
+	{{ parent() }}
+	<meta name="csrf-token" content="{{ csrf_token('ingredient_new_ajax') }}">
+{% endblock %}
 
 {% block body %}
-<div class="container mt-4">
-    <h1 class="text-center mb-4">Créer votre nouvelle recette</h1>
+	<div class="container mt-4">
+		<h1 class="text-center mb-4">Créer votre nouvelle recette</h1>
 
-    <div class="card shadow-sm mb-4">
-        <div class="card-body">
-            {{ form_start(form) }}
+		{# Affichage des messages flash #}
+		{% for label, messages in app.flashes %}
+			{% for message in messages %}
+				<div class="alert alert-{{ label }} alert-dismissible fade show" role="alert">
+					{{ message }}
+					<button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+				</div>
+			{% endfor %}
+		{% endfor %}
 
-            <div class="mb-3">
-                {{ form_row(form.nom, {'attr': {'class': 'form-control', 'placeholder': 'Nom du repas'}}) }}
-            </div>
-            <div class="mb-3">
-                {{ form_row(form.categorie, {'attr': {'class': 'form-select', 'placeholder': 'Catégorie'}}) }}
-            </div>
-            <div class="mb-3">
-                {{ form_row(form.description, {'attr': {'class': 'form-control', 'rows': '4', 'placeholder': 'Description du repas'}}) }}
-            </div>
-            <div class="mb-3">
-                {{ form_row(form.recette, {'attr': {'class': 'form-control', 'rows': '6', 'placeholder': 'Détails de la recette'}}) }}
-            </div>
+		{# Séparer les formulaires #}
+		{{ form_start(form, {
+			'attr': {
+				'id': 'repas-form',
+				'class': 'needs-validation'
+			}
+		}) }}
 
-            <div class="mb-3">
-                <h3 class="text-center">Ingrédients</h3>
-                <div id="ingredient-list" 
-                     data-prototype="{{ form_widget(form.ingredientQuantites.vars.prototype)|e('html_attr') }}">
-                    {% for ingredientQuantiteField in form.ingredientQuantites %}
-                        <div class="ingredient-item card mb-3 p-3 shadow-sm">
-                            <div class="row">
-                                <div class="col-md-6 mb-2">
-                                    {{ form_row(ingredientQuantiteField.ingredient, {'attr': {'class': 'form-control', 'placeholder': 'Ingrédient'}}) }}
-                                </div>
-                                <div class="col-md-4 mb-2">
-                                    {{ form_row(ingredientQuantiteField.quantite, {'attr': {'class': 'form-control', 'placeholder': 'Quantité'}}) }}
-                                </div>
-                                <div class="col-md-2 d-flex align-items-center">
-                                    <button type="button" class="btn btn-danger remove-ingredient">Supprimer</button>
-                                </div>
-                            </div>
-                        </div>
-                    {% endfor %}
-                </div>
-                <div class="d-flex justify-content-center">
-                    <button type="button" class="btn btn-secondary mt-2" id="add-ingredient">
-                        <i class="fa fa-plus"></i> Ajouter un ingrédient
-                    </button>
-                </div>
-            </div>
+		{# Affichage des erreurs globales du formulaire #}
+		{{ form_errors(form) }}
 
-            <button class="btn btn-primary w-100 mt-3">{{ button_label|default('Enregistrer') }}</button>
-            {{ form_end(form) }}
-        </div>
-    </div>
+		{# Informations générales #}
+		<div class="card shadow-sm mb-4">
+			<div class="card-header bg-light">
+				<h3 class="mb-0">
+					<i class="fas fa-info-circle me-2"></i>Informations générales
+				</h3>
+			</div>
+			<div class="card-body">
+				<div class="row g-3">
+					<div class="col-md-6">
+						{{ form_label(form.nom, 'Nom de la recette', {'label_attr': {'class': 'form-label fw-bold'}}) }}
+						{{ form_widget(form.nom, {
+                            'attr': {
+                                'class': 'form-control',
+                                'placeholder': 'Entrez le nom de votre recette'
+                            }
+                        }) }}
+						{{ form_errors(form.nom) }}
+					</div>
+					<div class="col-md-6">
+						{{ form_label(form.categorie, 'Catégorie', {'label_attr': {'class': 'form-label fw-bold'}}) }}
+						{{ form_widget(form.categorie, {
+                            'attr': {
+                                'class': 'form-select'
+                            }
+                        }) }}
+					</div>
+					<div class="col-12">
+						{{ form_label(form.description, 'Description', {'label_attr': {'class': 'form-label fw-bold'}}) }}
+						{{ form_widget(form.description, {
+                            'attr': {
+                                'class': 'form-control',
+                                'rows': '3',
+                                'placeholder': 'Décrivez brièvement votre recette'
+                            }
+                        }) }}
+						{{ form_errors(form.description) }}
+					</div>
+				</div>
+			</div>
+		</div>
 
-    <div class="text-center">
-        <a href="{{ path('repas_index') }}" class="btn btn-secondary mt-3">Retour à la liste</a>
-    </div>
-</div>
+		{# Liste des ingrédients #}
+		{{ include('repas/_ingredient_form.html.twig') }}
 
-{% endblock %}
+		{# Instructions #}
+		<div class="card shadow-sm mb-4">
+			<div class="card-header bg-light">
+				<h3 class="mb-0">
+					<i class="fas fa-book me-2"></i>Instructions de préparation
+				</h3>
+			</div>
+			<div class="card-body">
+				{{ form_label(form.recette, 'Instructions détaillées', {'label_attr': {'class': 'form-label fw-bold'}}) }}
+				{{ form_widget(form.recette, {
+                    'attr': {
+                        'class': 'form-control',
+                        'rows': '10',
+                        'placeholder': 'Détaillez les étapes de préparation de votre recette'
+                    }
+                }) }}
+				{{ form_errors(form.recette) }}
+			</div>
+		</div>
 
-{% block javascripts %}
+		{# Assurez-vous que ces champs sont présents #}
+		{{ form_row(form._token) }}
+		
+		<div class="text-center mb-4">
+			<button type="submit" class="btn btn-primary btn-lg">
+				<i class="fas fa-save me-2"></i>Enregistrer la recette
+			</button>
+			<a href="{{ path('index') }}" class="btn btn-secondary btn-lg ms-2">
+				<i class="fas fa-arrow-left me-2"></i>Retour à la liste
+			</a>
+		</div>
 
-{% endblock %}
+		{{ form_rest(form) }}
+		{{ form_end(form) }}
+	</div>
+
+	{% endblock %}
+
+	{% block javascripts %}
+		{{ parent() }}
+		<script src="{{ asset('js/ingredients.js') }}"></script>
+		<script>
+			document.addEventListener('DOMContentLoaded', function() {
+				// Validation du formulaire principal uniquement
+				const repasForm = document.getElementById('repas-form');
+				if (repasForm) {
+					repasForm.addEventListener('submit', function(e) {
+						if (!this.checkValidity()) {
+							e.preventDefault();
+							e.stopPropagation();
+						}
+						this.classList.add('was-validated');
+					});
+				}
+			});
+		</script>
+	{% endblock %}
+
+	{% block stylesheets %}
+		{{ parent() }}
+		<style>
+			/* Styles spécifiques à la page */
+		</style>
+	{% endblock %}

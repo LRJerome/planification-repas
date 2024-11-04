@@ -1,0 +1,114 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Sommaire des Recettes{% endblock %}
+
+{% block body %}
+<div class="container mt-4">
+    <h1 class="text-center mb-4">Sommaire des Recettes</h1>
+
+    {# Filtres par catégorie #}
+    <div class="mb-4">
+        <div class="btn-group w-100" role="group">
+            <button type="button" class="btn btn-outline-primary filter-btn active" data-filter="all">
+                Toutes les recettes
+            </button>
+            <button type="button" class="btn btn-outline-primary filter-btn" data-filter="low_carb">
+                Low Carb
+            </button>
+            <button type="button" class="btn btn-outline-primary filter-btn" data-filter="post_training">
+                Post Training
+            </button>
+            <button type="button" class="btn btn-outline-primary filter-btn" data-filter="en_cas">
+                En-cas
+            </button>
+            <button type="button" class="btn btn-outline-primary filter-btn" data-filter="autre">
+                Autre
+            </button>
+        </div>
+    </div>
+    
+
+    <div class="table-responsive">
+        <table class="table table-hover">
+            <thead>
+                <tr>
+                    <th>Nom de la recette</th>
+                    <th class="text-center" style="width: 150px">Type</th>
+                    <th class="text-center" style="width: 100px">Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for categorie, repas in repas_par_categorie %}
+                    {% for item in repas %}
+                        <tr class="recipe-row" data-category="{{ categorie }}">
+                            <td>{{ item.nom }}</td>
+                            <td class="text-center">
+                                <span class="badge bg-{{ categorie == 'low_carb' ? 'success' : 
+                                               categorie == 'post_training' ? 'primary' : 
+                                               categorie == 'en_cas' ? 'warning' : 
+                                               'secondary' }}">
+                                    {{ categorie|replace({'_': ' '})|capitalize }}
+                                </span>
+                            </td>
+                            <td class="text-center">
+                                <a href="{{ path('repas_show', {'id': item.id}) }}" 
+                                   class="btn btn-sm btn-outline-primary">
+                                    <i class="fas fa-eye me-1"></i>Voir
+                                </a>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const filterButtons = document.querySelectorAll('.filter-btn');
+            const recipeRows = document.querySelectorAll('.recipe-row');
+
+            filterButtons.forEach(button => {
+                button.addEventListener('click', function() {
+                    // Retirer la classe active de tous les boutons
+                    filterButtons.forEach(btn => btn.classList.remove('active'));
+                    // Ajouter la classe active au bouton cliqué
+                    this.classList.add('active');
+
+                    const filter = this.dataset.filter;
+
+                    recipeRows.forEach(row => {
+                        if (filter === 'all' || row.dataset.category === filter) {
+                            row.style.display = '';
+                        } else {
+                            row.style.display = 'none';
+                        }
+                    });
+                });
+            });
+        });
+    </script>
+{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    {% include 'styles/_meal_types.html.twig' %}
+    <style>
+        .btn-group {
+            margin-bottom: 1rem;
+        }
+        
+        .table td {
+            vertical-align: middle;
+        }
+
+        .badge {
+            font-weight: normal;
+            padding: 0.4em 0.8em;
+        }
+    </style>
+{% endblock %} 

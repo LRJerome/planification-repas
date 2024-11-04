@@ -2,31 +2,22 @@
 
 namespace App\Repository;
 
-use App\Entity\Ingredient;
+use App\Entity\IngredientQuantite;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
 /**
- * @extends ServiceEntityRepository<Ingredient>
+ * @extends ServiceEntityRepository<IngredientQuantite>
  */
-class IngredientRepository extends ServiceEntityRepository
+class IngredientQuantiteRepository extends ServiceEntityRepository
 {
     public function __construct(ManagerRegistry $registry)
     {
-        parent::__construct($registry, Ingredient::class);
-    }
-
-    public function findAllOrderedByName()
-    {
-        return $this->createQueryBuilder('i')
-            ->orderBy('LOWER(i.nom)', 'ASC')
-            ->getQuery()
-            ->getResult()
-        ;
+        parent::__construct($registry, IngredientQuantite::class);
     }
 
 //    /**
-//     * @return Ingredient[] Returns an array of Ingredient objects
+//     * @return IngredientQuantite[] Returns an array of IngredientQuantite objects
 //     */
 //    public function findByExampleField($value): array
 //    {
@@ -40,7 +31,7 @@ class IngredientRepository extends ServiceEntityRepository
 //        ;
 //    }
 
-//    public function findOneBySomeField($value): ?Ingredient
+//    public function findOneBySomeField($value): ?IngredientQuantite
 //    {
 //        return $this->createQueryBuilder('i')
 //            ->andWhere('i.exampleField = :val')

@@ -1,47 +1,188 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Détails du Repas{% endblock %}
+{% block stylesheets %}
+	{{ parent() }}
+	<style>
+		.recipe-header {
+			background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+			padding: 2rem;
+			border-radius: 15px;
+			margin-bottom: 2rem;
+			box-shadow: 0 2px 15px rgba(0, 0, 0, 0.1);
+		}
+		.ingredient-list {
+			background: #fff;
+			border-radius: 10px;
+			padding: 1.5rem;
+			box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+		}
+		.planning-form {
+			background: #fff;
+			border-radius: 10px;
+			padding: 1.5rem;
+			box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+		}
+		.ingredient-badge {
+			font-size: 0.9em;
+			padding: 0.5em 1em;
+			margin: 0.2em;
+			border-radius: 20px;
+			background-color: #e9ecef;
+			color: #495057;
+			display: inline-flex;
+			align-items: center;
+		}
+		.ingredient-badge .quantity {
+			background: #6c757d;
+			color: white;
+			padding: 0.2em 0.6em;
+			border-radius: 10px;
+			margin-left: 0.5em;
+			font-size: 0.9em;
+		}
+		.description-box {
+			background: #fff;
+			border-radius: 10px;
+			padding: 1.5rem;
+			margin-bottom: 2rem;
+			box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+		}
+	</style>
+{% endblock %}
 
 {% block body %}
 <div class="container mt-4">
-    <h1 class="text-center mb-4">{{ repas.nom }}</h1>
+    <div class="row">
+        <div class="col-md-8">
+            <div class="recipe-header">
+                <h1 class="mb-3">{{ repas.nom }}</h1>
+                {% if repas.categorie %}
+                    <span class="badge bg-primary mb-3">
+                        {{ repas.categorie|replace({'_': ' '})|capitalize }}
+                    </span>
+                {% endif %}
+            </div>
 
-    <div class="card mb-4 shadow-sm">
-        <div class="card-body">
-            <h5 class="card-title">Informations générales</h5>
-            <p><strong>Catégorie :</strong> {{ repas.categorie|replace({'_': ' '})|capitalize }}</p>
-            <p><strong>Description :</strong> {{ repas.description }}</p>
-        </div>
-    </div>
+            {% if repas.description %}
+                <div class="description-box mb-4">
+                    <h3 class="mb-3">
+                        <i class="fas fa-info-circle me-2"></i>Description
+                    </h3>
+                    <p>{{ repas.description }}</p>
+                </div>
+            {% endif %}
 
-    <div class="card mb-4 shadow-sm">
-        <div class="card-body">
-            <h5 class="card-title">Recette</h5>
-            <p>{{ repas.recette|nl2br }}</p>
-        </div>
-    </div>
-
-    <div class="card mb-4 shadow-sm">
-        <div class="card-body">
-            <h5 class="card-title">Ingrédients</h5>
-            <ul class="list-group list-group-flush">
-                {% for ingredient in repas.ingredients %}
-                    <li class="list-group-item d-flex justify-content-between align-items-center">
-                        {{ ingredient.nom }}
-                        <span class="badge bg-primary rounded-pill">{{ ingredient.quantiteDefaut }} {{ ingredient.unite }}</span>
-                    </li>
+            {# Liste des ingrédients #}
+            <div class="ingredient-list mb-4">
+                <h3 class="mb-3">
+                    <i class="fas fa-list me-2"></i>Ingrédients
+                </h3>
+                {% if repas.ingredientQuantites is not empty %}
+                    <div class="table-responsive">
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Ingrédient</th>
+                                    <th>Quantité</th>
+                                    <th>Unité</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for ingredientQuantite in repas.ingredientQuantites %}
+                                    <tr>
+                                        <td>{{ ingredientQuantite.ingredient.nom }}</td>
+                                        <td>{{ ingredientQuantite.quantite }}</td>
+                                        <td>{{ ingredientQuantite.ingredient.unite }}</td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
                 {% else %}
-                    <li class="list-group-item">Aucun ingrédient listé.</li>
-                {% endfor %}
-            </ul>
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle me-2"></i>
+                        Aucun ingrédient n'est associé à cette recette.
+                    </div>
+                {% endif %}
+            </div>
+
+            {% if repas.recette %}
+                <div class="description-box">
+                    <h3 class="mb-3">
+                        <i class="fas fa-book me-2"></i>Instructions
+                    </h3>
+                    <div class="recipe-text">
+                        {{ repas.recette|nl2br }}
+                    </div>
+                </div>
+            {% endif %}
         </div>
-    </div>
 
-    <div class="d-flex justify-content-between mt-3">
-        <a href="{{ path('repas_index') }}" class="btn btn-secondary">Retour à la liste</a>
-        <a href="{{ path('repas_edit', {'id': repas.id}) }}" class="btn btn-primary">Modifier</a>
-    </div>
+			<div class="col-md-4">
+				<div class="planning-form">
+					<h3 class="mb-3">
+						<i class="fas fa-calendar-plus me-2"></i>Ajouter au planning
+					</h3>
+					<form method="post" action="{{ path('planning_add_repas', {'id': repas.id}) }}" class="needs-validation" novalidate>
+						<div class="mb-3">
+							<label for="date" class="form-label">Date</label>
+							<input type="date" id="date" name="date" class="form-control" required min="{{ "now"|date('Y-m-d') }}">
+						</div>
 
-    {{ include('repas/_delete_form.html.twig') }}
-</div>
+						<div class="mb-3">
+							<label for="type" class="form-label">Moment du repas</label>
+							<select id="type" name="type" class="form-select" required>
+								<option value="petitDejeuner" {% if repas.categorie == 'petit_dejeuner' %} selected {% endif %}>Petit Déjeuner</option>
+								<option value="encasMatin" {% if repas.categorie == 'encas_matin' %} selected {% endif %}>En-cas Matin</option>
+								<option value="dejeuner" {% if repas.categorie == 'dejeuner' %} selected {% endif %}>Déjeuner</option>
+								<option value="encasApresMidi" {% if repas.categorie == 'encas_apres_midi' %} selected {% endif %}>En-cas Après-midi</option>
+								<option value="diner" {% if repas.categorie == 'diner' %} selected {% endif %}>Dîner</option>
+							</select>
+						</div>
+
+						<div class="mb-3" id="nombrePersonnesGroup">
+							<label for="nombrePersonnes" class="form-label">Nombre de personnes</label>
+							<input type="number" id="nombrePersonnes" name="nombrePersonnes" class="form-control" min="1" value="1" required>
+						</div>
+
+						<button type="submit" class="btn btn-primary w-100">
+							<i class="fas fa-plus me-2"></i>Ajouter au planning
+						</button>
+					</form>
+				</div>
+			</div>
+		</div>
+	</div>
+{% endblock %}
+
+{% block javascripts %}
+	{{ parent() }}
+	<script>
+		document.addEventListener('DOMContentLoaded', function () {
+const form = document.querySelector('form');
+const dateInput = document.getElementById('date');
+const typeSelect = document.getElementById('type');
+const nombrePersonnesInput = document.getElementById('nombrePersonnes');
+
+// Set minimum date to today
+dateInput.min = new Date().toISOString().split('T')[0];
+dateInput.value = new Date().toISOString().split('T')[0];
+
+// Form validation
+form.addEventListener('submit', function (event) {
+if (! form.checkValidity()) {
+event.preventDefault();
+event.stopPropagation();
+}
+form.classList.add('was-validated');
+});
+
+// Number of persons validation
+nombrePersonnesInput.addEventListener('input', function () {
+if (this.value < 1) 
+this.value = 1;
+
+});
+});
+	</script>
 {% endblock %}

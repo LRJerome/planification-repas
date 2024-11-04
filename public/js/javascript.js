@@ -1,3 +1,7 @@
+const routes = {
+    newIngredient: document.querySelector('body').dataset.newIngredientPath
+};
+
 document.addEventListener('DOMContentLoaded', function() {
     console.log('DOM chargé avec succes');
 
@@ -67,56 +71,25 @@ document.addEventListener('DOMContentLoaded', function() {
          modal.show();
      }
 
-     function saveNewIngredient(event) {
-         
-         event.preventDefault();
-         
-         console.log('Saving new ingredient');
-         
-         var form = document.getElementById('newIngredientForm');
-         
-         if (!form) {
-             
-             console.error('New ingredient form not found');
-             
-             return;
-         }
-         
-         var formData = new FormData(form);
-
-         fetch('{{ path("app_ingredient_new") }}', {
-             
-             method: 'POST',
-             
-             body: formData
-         })
-         .then(response => response.json())
-         .then(data => {
-             
-             console.log('Server response:', data);
-             
-             if (data.success) {
-                 
-                 // Ajouter l'ingrédient à la liste déroulante ou autre traitement...
-                 
+     async function saveNewIngredient(formData) {
+         try {
+             const response = await fetch(routes.newIngredient, {
+                 method: 'POST',
+                 body: formData
+             });
+             console.log('Server response:', response);
+             if (response.ok) {
                  console.log('New ingredient added successfully');
-                 
                  modal.hide();
-                 
                  form.reset();
              } else {
-                 
-                 console.error('Error creating new ingredient:', data.error);
-                 
-                 alert(`Erreur lors de la création de l'ingrédient: ${data.error}`);
+                 console.error('Error creating new ingredient:', response.statusText);
+                 alert(`Erreur lors de la création de l'ingrédient: ${response.statusText}`);
              }
-         })
-         .catch(error => {
-             
-             console.error('Fetch error:', error);
-             
+         } catch (error) {
+             console.error('Erreur:', error);
              alert("Une erreur est survenue lors de la communication avec le serveur");
-         });
+         }
      }
 
      addButton.addEventListener('click', addIngredientForm);

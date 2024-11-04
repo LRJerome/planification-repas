@@ -19,9 +19,42 @@ class RepasRepository extends ServiceEntityRepository
     public function findByCategories(array $categories): array
     {
         return $this->createQueryBuilder('r')
-            ->andWhere('r.categorie IN (:categories)')
+            ->where('r.categorie IN (:categories)')
             ->setParameter('categories', $categories)
             ->orderBy('r.nom', 'ASC')
+            ->getQuery()
+            ->getResult();
+    }
+
+    public function findByIngredientsAndCategories($ingredientId, array $categories)
+    {
+        return $this->createQueryBuilder('r')
+            ->join('r.ingredientQuantites', 'iq')
+            ->join('iq.ingredient', 'i')
+            ->where('i.id = :ingredientId')
+            ->andWhere('r.categorie IN (:categories)')
+            ->setParameter('ingredientId', $ingredientId)
+            ->setParameter('categories', $categories)
+            ->orderBy('r.nom', 'ASC')
+            ->getQuery()
+            ->getResult();
+    }
+
+    public function findAllOrderedByName(): array
+    {
+        return $this->createQueryBuilder('r')
+            ->orderBy('r.nom', 'ASC')
+            ->getQuery()
+            ->getResult();
+    }
+
+    public function findByIngredient($ingredientId)
+    {
+        return $this->createQueryBuilder('r')
+            ->join('r.ingredientQuantites', 'iq')
+            ->join('iq.ingredient', 'i')
+            ->where('i.id = :ingredientId')
+            ->setParameter('ingredientId', $ingredientId)
             ->getQuery()
             ->getResult();
     }

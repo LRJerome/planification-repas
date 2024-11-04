@@ -1,45 +1,51 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Liste des Ingrédients{% endblock %}
+{% block title %}Liste des Ingrédients
+{% endblock %}
 
 {% block body %}
-    <div class="container mt-4">
-        <h1 class="text-center">Liste des Ingrédients</h1>
-        <a href="{{ path('app_ingredient_new') }}" class="btn btn-success mb-3">
-            <i class="fa-solid fa-plus"></i> Ajouter un nouvel ingrédient
-        </a>
-        <div class="table-responsive">
-            <table class="table table-bordered table-striped text-center">
-                <thead class="table-dark">
-                    <tr>
-                        <th>Nom</th>
-                        <th>Quantité par défaut</th>
-                        <th>Unité</th>
-                        <th>Actions</th>
-                    </tr>
-                </thead>
-                <tbody>
-                {% for ingredient in ingredients %}
-                    <tr>
-                        <td>{{ ingredient.nom }}</td>
-                        <td>{{ ingredient.quantiteDefaut }}</td>
-                        <td>{{ ingredient.unite }}</td>
-                        <td>
-                            <a href="{{ path('app_ingredient_show', {'id': ingredient.id}) }}" class="btn btn-sm btn-info">
-                                <i class="fa-solid fa-eye"></i> Voir
-                            </a>
-                            <a href="{{ path('app_ingredient_edit', {'id': ingredient.id}) }}" class="btn btn-sm btn-warning">
-                                <i class="fa-solid fa-edit"></i> Modifier
-                            </a>
-                        </td>
-                    </tr>
-                {% else %}
-                    <tr>
-                        <td colspan="4" class="text-muted">Aucun ingrédient trouvé</td>
-                    </tr>
-                {% endfor %}
-                </tbody>
-            </table>
-        </div>
-    </div>
+	<div class="container mt-4">
+		<h1 class="text-center">Liste des Ingrédients</h1>
+		<a href="{{ path('ingredient_new') }}" class="btn btn-success mb-3">
+			<i class="fa-solid fa-plus"></i>
+			Ajouter un nouvel ingrédient
+		</a>
+		<div class="table-responsive">
+			<table class="table table-bordered table-striped text-center">
+				<thead class="table-dark">
+					<tr>
+						<th>Nom</th>
+						<th>Quantité par défaut</th>
+						<th>Unité</th>
+						<th>Actions</th>
+					</tr>
+				</thead>
+				<tbody>
+					{% for ingredient in ingredients %}
+						<tr>
+							<td>{{ ingredient.nom }}</td>
+							<td>{{ ingredient.quantiteDefaut }}</td>
+							<td>{{ ingredient.unite }}</td>
+							<td>
+								<a href="{{ path('ingredient_edit', {'id': ingredient.id}) }}" class="btn btn-sm btn-warning">
+									<i class="fa-solid fa-edit"></i>
+									Modifier
+								</a>
+								<form method="post" action="{{ path('ingredient_delete', {'id': ingredient.id}) }}" style="display: inline-block" onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer cet ingrédient ?');">
+									<input type="hidden" name="_token" value="{{ csrf_token('delete' ~ ingredient.id) }}">
+									<button class="btn btn-sm btn-danger">
+										<i class="fa-solid fa-trash"></i>
+									</button>
+								</form>
+							</td>
+						</tr>
+					{% else %}
+						<tr>
+							<td colspan="4" class="text-muted">Aucun ingrédient trouvé</td>
+						</tr>
+					{% endfor %}
+				</tbody>
+			</table>
+		</div>
+	</div>
 {% endblock %}

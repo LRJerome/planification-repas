@@ -1,16 +1,14 @@
-{{ form_start(form, {'attr': {'class': 'form-group'}}) }}
+{{ form_start(form) }}
     <div class="mb-3">
-        {{ form_label(form.nom, 'Nom de l\'ingrédient', {'label_attr': {'class': 'form-label'}}) }}
-        {{ form_widget(form.nom, {'attr': {'class': 'form-control'}}) }}
+        {{ form_row(form.nom) }}
     </div>
     <div class="mb-3">
-        {{ form_label(form.quantiteDefaut, 'Quantité par défaut', {'label_attr': {'class': 'form-label'}}) }}
-        {{ form_widget(form.quantiteDefaut, {'attr': {'class': 'form-control'}}) }}
+        {{ form_row(form.unite) }}
     </div>
     <div class="mb-3">
-        {{ form_label(form.unite, 'Unité', {'label_attr': {'class': 'form-label'}}) }}
-        {{ form_widget(form.unite, {'attr': {'class': 'form-control'}}) }}
+        {{ form_row(form.quantiteDefaut) }}
     </div>
+
     <button class="btn btn-primary">
         <i class="fa-solid fa-save"></i> {{ button_label|default('Enregistrer') }}
     </button>
