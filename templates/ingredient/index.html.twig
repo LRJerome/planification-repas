@@ -1,51 +1,111 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Liste des Ingrédients
-{% endblock %}
+{% block title %}Liste des Ingrédients{% endblock %}
 
 {% block body %}
-	<div class="container mt-4">
-		<h1 class="text-center">Liste des Ingrédients</h1>
-		<a href="{{ path('ingredient_new') }}" class="btn btn-success mb-3">
-			<i class="fa-solid fa-plus"></i>
-			Ajouter un nouvel ingrédient
-		</a>
-		<div class="table-responsive">
-			<table class="table table-bordered table-striped text-center">
-				<thead class="table-dark">
-					<tr>
-						<th>Nom</th>
-						<th>Quantité par défaut</th>
-						<th>Unité</th>
-						<th>Actions</th>
-					</tr>
-				</thead>
-				<tbody>
-					{% for ingredient in ingredients %}
-						<tr>
-							<td>{{ ingredient.nom }}</td>
-							<td>{{ ingredient.quantiteDefaut }}</td>
-							<td>{{ ingredient.unite }}</td>
-							<td>
-								<a href="{{ path('ingredient_edit', {'id': ingredient.id}) }}" class="btn btn-sm btn-warning">
-									<i class="fa-solid fa-edit"></i>
-									Modifier
-								</a>
-								<form method="post" action="{{ path('ingredient_delete', {'id': ingredient.id}) }}" style="display: inline-block" onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer cet ingrédient ?');">
-									<input type="hidden" name="_token" value="{{ csrf_token('delete' ~ ingredient.id) }}">
-									<button class="btn btn-sm btn-danger">
-										<i class="fa-solid fa-trash"></i>
-									</button>
-								</form>
-							</td>
-						</tr>
-					{% else %}
-						<tr>
-							<td colspan="4" class="text-muted">Aucun ingrédient trouvé</td>
-						</tr>
-					{% endfor %}
-				</tbody>
-			</table>
-		</div>
-	</div>
+    <div class="container mt-4">
+        {# Affichage des messages flash #}
+        {% for label, messages in app.flashes %}
+            {% for message in messages %}
+                <div class="alert alert-{{ label }} alert-dismissible fade show" role="alert">
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            {% endfor %}
+        {% endfor %}
+        
+        <div class="border border-primary rounded-3 p-4 shadow mb-5">
+            <h1 class="text-center">Liste des Ingrédients</h1>
+            
+            {# Ajout du champ de recherche #}
+            <div class="row justify-content-center mt-4">
+                <div class="col-md-6">
+                    <div class="input-group mb-3">
+                        <input type="text" id="searchIngredient" class="form-control" placeholder="Rechercher un ingrédient...">
+                        <button class="btn btn-secondary" type="button" id="clearSearch">
+                            <i class="fas fa-undo"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="text-center mt-3">
+                <a href="{{ path('ingredient_new') }}" class="btn btn-success mb-3">
+                    <i class="fa-solid fa-plus"></i>
+                    Ajouter un nouvel ingrédient
+                </a>
+            </div>
+        </div>
+        
+        <div class="table-responsive border-dark" style="max-height: 65vh; overflow-y: auto;">
+            <table class="table table-bordered table-striped text-center">
+                <thead class="table-dark">
+                    <tr>
+                        <th>Nom</th>
+                        <th>Quantité par défaut</th>
+                        <th>Unité</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="ingredientsTable">
+                    {% for ingredient in ingredients %}
+                        <tr class="ingredient-row">
+                            <td class="ingredient-name">{{ ingredient.nom }}</td>
+                            <td>{{ ingredient.quantiteDefaut }}</td>
+                            <td>{{ ingredient.unite }}</td>
+                            <td>
+                                <a href="{{ path('ingredient_edit', {'id': ingredient.id}) }}" class="btn btn-sm btn-warning">
+                                    <i class="fa-solid fa-edit"></i>
+                                    Modifier
+                                </a>
+                                <form method="post" action="{{ path('ingredient_delete', {'id': ingredient.id}) }}" style="display: inline-block" onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer cet ingrédient ?');">
+                                    <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ ingredient.id) }}">
+                                    <button class="btn btn-sm btn-danger">
+                                        <i class="fa-solid fa-trash"></i>
+                                    </button>
+                                </form>
+                            </td>
+                        </tr>
+                    {% else %}
+                        <tr>
+                            <td colspan="4" class="text-muted">Aucun ingrédient trouvé</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const searchInput = document.getElementById('searchIngredient');
+            const clearButton = document.getElementById('clearSearch');
+            const rows = document.querySelectorAll('.ingredient-row');
+
+            function filterIngredients(searchTerm) {
+                searchTerm = searchTerm.toLowerCase();
+                
+                rows.forEach(row => {
+                    const ingredientName = row.querySelector('.ingredient-name').textContent.toLowerCase();
+                    if (ingredientName.startsWith(searchTerm)) {
+                        row.style.display = '';
+                    } else {
+                        row.style.display = 'none';
+                    }
+                });
+            }
+
+            searchInput.addEventListener('input', function(e) {
+                filterIngredients(e.target.value);
+            });
+
+            clearButton.addEventListener('click', function() {
+                searchInput.value = '';
+                filterIngredients('');
+            });
+        });
+    </script>
 {% endblock %}

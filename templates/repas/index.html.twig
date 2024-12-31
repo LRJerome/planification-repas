@@ -3,65 +3,95 @@
 {% block title %}Liste des recettes{% endblock %}
 
 {% block body %}
-<div class="container mt-4">
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <h1>Liste des recettes</h1>
-        <a href="{{ path('app_repas_new') }}" class="btn btn-primary">
-            <i class="fas fa-plus me-2"></i>Nouvelle recette
-        </a>
-    </div>
+	<div class="container mt-4">
+		<div class="border border-primary rounded-3 p-4 shadow mb-5">
+			<div class="d-flex justify-content-between align-items-center mb-4">
 
-    {# Filtres par catégorie #}
-    <div class="mb-4">
-        <div class="btn-group w-100" role="group">
-            <button type="button" class="btn btn-outline-primary filter-btn active" data-filter="all">
-                Toutes les recettes
-            </button>
-            <button type="button" class="btn btn-outline-primary filter-btn" data-filter="low_carb">
-                Low Carb
-            </button>
-            <button type="button" class="btn btn-outline-primary filter-btn" data-filter="post_training">
-                Post Training
-            </button>
-            <button type="button" class="btn btn-outline-primary filter-btn" data-filter="en_cas">
-                En-cas
-            </button>
-            <button type="button" class="btn btn-outline-primary filter-btn" data-filter="autre">
-                Autre
-            </button>
+                <h1>Liste des recettes</h1>
+                <a href="{{ path('app_repas_new') }}" class="btn btn-primary">
+                    <i class="fas fa-plus me-2"></i>Nouvelle recette
+                </a>
+            </div>
+
+        {# Filtres par catégorie #}
+        <div class="mb-4">
+            <div class="btn-group w-100" role="group">
+                <button type="button" class="btn btn-outline-primary filter-btn active" data-filter="all">
+                    Toutes les recettes
+                </button>
+                <button type="button" class="btn btn-outline-primary filter-btn" data-filter="low-carb">
+                    Low Carb
+                </button>
+                <button type="button" class="btn btn-outline-primary filter-btn" data-filter="post-training">
+                    Post Training
+                </button>
+                <button type="button" class="btn btn-outline-primary filter-btn" data-filter="en-cas">
+                    En-cas
+                </button>
+                <button type="button" class="btn btn-outline-primary filter-btn" data-filter="petit-dejeuner">
+						Petit Déjeuner
+					</button>
+            </div>
+        </div>
+
+        {# Filtre par ingrédient #}
+        <div class="row mb-4 text-center">
+            <div class="col-md-6 col-lg-4">
+                <div class="card shadow-sm">
+                    <div class="card-body">
+                        <h5 class="card-title mb-3">
+                            <i class="fas fa-filter me-2"></i>Filtrer par ingrédient
+                        </h5>
+                        <form action="{{ path('index') }}" method="get" class="d-flex gap-2">
+                            <select name="ingredient" class="form-select">
+                                <option value="">Tous les ingrédients</option>
+                                {% for ingredient in ingredients %}
+                                    <option value="{{ ingredient.id }}" 
+                                            {% if selectedIngredient == ingredient.id %}selected{% endif %}>
+                                        {{ ingredient.nom }}
+                                    </option>
+                                {% endfor %}
+                            </select>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-search"></i>
+                            </button>
+                            <a href="{{ path('index') }}" class="btn btn-secondary">
+                                <i class="fas fa-undo"></i>
+                            </a>
+                        </form>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
-
-    {# Filtre par ingrédient #}
-    <div class="mb-4">
-        <label for="ingredient-filter" class="form-label">Filtrer par ingrédient</label>
-        <select id="ingredient-filter" class="form-control">
-            <option value="">Tous les ingrédients</option>
-            {% for ingredient in ingredients %}
-                <option value="{{ ingredient.id }}" 
-                        {% if selectedIngredient == ingredient.id %}selected{% endif %}>
-                    {{ ingredient.nom }}
-                </option>
-            {% endfor %}
-        </select>
-    </div>
-
+    
+    
     {# Liste des recettes #}
-    <div id="recettes-list" class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
+    <div class="table-responsive" style="max-height: 65vh; overflow-y: auto;">
+    <div id="recettes-list" class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4 border">
         {% for repas in repas %}
             <div class="col">
                 <div class="card h-100 shadow-sm recipe-row"
-                     data-category="{{ repas.categorie }}"
-                     data-ingredients="{{ repas.ingredientQuantites|map(iq => iq.ingredient.nom)|join(' ')|lower }}">
+                     data-category="{{ repas.categorie|replace({'_': '-'})|lower }}"
+                     data-ingredients="{% for iq in repas.ingredientQuantites %}{% if iq.ingredient is not null %}{{ iq.ingredient.nom|lower }} {% endif %}{% endfor %}">
+                    {% if repas.imageName %}
+                        <img src="{{ vich_uploader_asset(repas, 'imageFile') }}" 
+                             class="card-img-top" 
+                             alt="{{ repas.nom }}"
+                             style="height: 200px; object-fit: cover;">
+                    {% endif %}
                     <div class="card-body">
                         <h5 class="card-title">{{ repas.nom }}</h5>
                         <div class="mb-2">
-                            <span class="badge bg-primary">
-                                {{ repas.categorie|replace({'_': ' '})|capitalize }}
+                            <span class="badge bg-{{ repas.categorie == 'low-carb' ? 'success' :
+                                                    repas.categorie == 'post-training' ? 'primary' :
+                                                    repas.categorie == 'en-cas' ? 'warning' :
+                                                    'info' }}">
+                                {{ repas.categorie|replace({'-': ' '})|title }}
                             </span>
                         </div>
-                        {% if repas.description %}
-                            <p class="card-text">{{ repas.description|slice(0, 100) }}...</p>
+                        {% if repas.recette %}
+                            <p class="card-text">{{ repas.recette|slice(0, 100)|striptags }}...</p>
                         {% endif %}
                         <div class="mt-3">
                             <a href="{{ path('repas_show', {'id': repas.id}) }}" class="btn btn-sm btn-outline-primary">
@@ -70,6 +100,14 @@
                             <a href="{{ path('repas_edit', {'id': repas.id}) }}" class="btn btn-sm btn-outline-warning">
                                 <i class="fas fa-edit me-1"></i>Modifier
                             </a>
+                            <form method="post" action="{{ path('repas_delete', {'id': repas.id}) }}" 
+                                  class="d-inline" 
+                                  onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer cette recette ?');">
+                                <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ repas.id) }}">
+                                <button class="btn btn-sm btn-outline-danger">
+                                    <i class="fas fa-trash me-1"></i>Supprimer
+                                </button>
+                            </form>
                         </div>
                     </div>
                 </div>
@@ -81,14 +119,23 @@
                 </div>
             </div>
         {% endfor %}
+        </div>
+    </div>
+
+    {# Ajouter ceci temporairement pour déboguer #}
+    <div class="d-none">
+        {% for repas in repas %}
+            <div>{{ repas.nom }} - Catégorie: {{ repas.categorie }}</div>
+        {% endfor %}
     </div>
 </div>
 {% endblock %}
 
 {% block javascripts %}
     {{ parent() }}
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
     <script>
-        document.addEventListener('DOMContentLoaded', function() {
+        $(document).ready(function() {
             // Initialisation de Select2
             $('#ingredient-filter').select2({
                 placeholder: 'Rechercher un ingrédient...',
@@ -107,28 +154,35 @@
             });
 
             // Gestion des filtres par catégorie
-            const filterButtons = document.querySelectorAll('.filter-btn');
-            const recipeCards = document.querySelectorAll('.recipe-row');
+            const filterButtons = $('.filter-btn');
+            const recipeCards = $('.recipe-row');
 
-            filterButtons.forEach(button => {
-                button.addEventListener('click', function() {
-                    // Retirer la classe active de tous les boutons
-                    filterButtons.forEach(btn => btn.classList.remove('active'));
-                    // Ajouter la classe active au bouton cliqué
-                    this.classList.add('active');
+            filterButtons.on('click', function() {
+                filterButtons.removeClass('active');
+                $(this).addClass('active');
 
-                    const filter = this.dataset.filter;
+                const filter = $(this).data('filter');
+                console.log('Filter clicked:', filter);
 
-                    // Filtrer les recettes
-                    recipeCards.forEach(card => {
-                        if (filter === 'all' || card.dataset.category === filter) {
-                            card.closest('.col').style.display = '';
-                        } else {
-                            card.closest('.col').style.display = 'none';
-                        }
-                    });
+                // Filtrer les recettes
+                recipeCards.each(function() {
+                    const card = $(this);
+                    const cardCategory = card.data('category');
+                    console.log(`Comparing filter "${filter}" with category "${cardCategory}"`);
+                    if (filter === 'all' || cardCategory === filter) {
+                        card.closest('.col').show();
+                        console.log('-> Showing card');
+                    } else {
+                        card.closest('.col').hide();
+                        console.log('-> Hiding card');
+                    }
                 });
             });
         });
     </script>
+{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
 {% endblock %}

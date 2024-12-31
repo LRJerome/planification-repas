@@ -51,14 +51,14 @@ document.addEventListener('DOMContentLoaded', function() {
         
         index++;
         
-        console.log('New ingredient form added, new index:', index);
+        // console.log('New ingredient form added, new index:', index);
     }
 
     function removeIngredientForm(event) {
         
          if (event.target.classList.contains('remove-ingredient')) {
             
-             console.log('Removing ingredient form');
+            // console.log('Removing ingredient form');
             
              event.target.closest('.ingredient-item').remove();
          }
@@ -66,7 +66,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
      function openCreateIngredientModal(event) {
          
-         console.log('Opening create ingredient modal');
+        // console.log('Opening create ingredient modal');
          
          modal.show();
      }
@@ -79,7 +79,7 @@ document.addEventListener('DOMContentLoaded', function() {
              });
              console.log('Server response:', response);
              if (response.ok) {
-                 console.log('New ingredient added successfully');
+                // console.log('New ingredient added successfully');
                  modal.hide();
                  form.reset();
              } else {
@@ -87,7 +87,7 @@ document.addEventListener('DOMContentLoaded', function() {
                  alert(`Erreur lors de la création de l'ingrédient: ${response.statusText}`);
              }
          } catch (error) {
-             console.error('Erreur:', error);
+            // console.error('Erreur:', error);
              alert("Une erreur est survenue lors de la communication avec le serveur");
          }
      }

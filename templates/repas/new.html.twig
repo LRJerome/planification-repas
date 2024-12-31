@@ -1,143 +1,210 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Nouvelle recette
-{% endblock %}
-{% block head %}
-	{{ parent() }}
-	<meta name="csrf-token" content="{{ csrf_token('ingredient_new_ajax') }}">
-{% endblock %}
+{% block title %}Nouvelle recette{% endblock %}
 
 {% block body %}
-	<div class="container mt-4">
-		<h1 class="text-center mb-4">Créer votre nouvelle recette</h1>
+    <div class="container mt-4">
+        <h1 class="text-center mb-4">Créer votre nouvelle recette</h1>
 
-		{# Affichage des messages flash #}
-		{% for label, messages in app.flashes %}
-			{% for message in messages %}
-				<div class="alert alert-{{ label }} alert-dismissible fade show" role="alert">
-					{{ message }}
-					<button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-				</div>
-			{% endfor %}
-		{% endfor %}
+        {{ form_start(form, {'attr': {'id': 'repas-form', 'class': 'needs-validation'}}) }}
+            {# Informations générales #}
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-light">
+                    <h3 class="mb-0">
+                        <i class="fas fa-info-circle me-2"></i>Informations générales
+                    </h3>
+                </div>
+                <div class="card-body">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            {{ form_label(form.nom, 'Nom de la recette', {'label_attr': {'class': 'form-label fw-bold'}}) }}
+                            {{ form_widget(form.nom, {
+                                'attr': {
+                                    'class': 'form-control',
+                                    'placeholder': 'Entrez le nom de votre recette'
+                                }
+                            }) }}
+                            {{ form_errors(form.nom) }}
+                        </div>
+                        <div class="col-md-6">
+                            {{ form_label(form.categorie, 'Catégorie', {'label_attr': {'class': 'form-label fw-bold'}}) }}
+                            {{ form_widget(form.categorie, {
+                                'attr': {
+                                    'class': 'form-select'
+                                }
+                            }) }}
+                        </div>
+                        <div class="col-12">
+                            {{ form_label(form.description, 'Description', {'label_attr': {'class': 'form-label fw-bold'}}) }}
+                            {{ form_widget(form.description, {
+                                'attr': {
+                                    'class': 'form-control',
+                                    'rows': '3',
+                                    'placeholder': 'Décrivez brièvement votre recette'
+                                }
+                            }) }}
+                            {{ form_errors(form.description) }}
+                        </div>
+                    </div>
+                </div>
+            </div>
 
-		{# Séparer les formulaires #}
-		{{ form_start(form, {
-			'attr': {
-				'id': 'repas-form',
-				'class': 'needs-validation'
-			}
-		}) }}
+            {# Liste des ingrédients #}
+            {{ include('repas/_ingredient_form.html.twig') }}
 
-		{# Affichage des erreurs globales du formulaire #}
-		{{ form_errors(form) }}
+            {# Instructions #}
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-light">
+                    <h3 class="mb-0">
+                        <i class="fas fa-book me-2"></i>Instructions de préparation
+                    </h3>
+                </div>
+                <div class="card-body">
+                    {{ form_label(form.recette, 'Instructions détaillées', {'label_attr': {'class': 'form-label fw-bold'}}) }}
+                    {{ form_widget(form.recette, {
+                        'attr': {
+                            'class': 'form-control',
+                            'rows': '10',
+                            'placeholder': 'Détaillez les étapes de préparation de votre recette'
+                        }
+                    }) }}
+                    {{ form_errors(form.recette) }}
+                </div>
+            </div>
 
-		{# Informations générales #}
-		<div class="card shadow-sm mb-4">
-			<div class="card-header bg-light">
-				<h3 class="mb-0">
-					<i class="fas fa-info-circle me-2"></i>Informations générales
-				</h3>
-			</div>
-			<div class="card-body">
-				<div class="row g-3">
-					<div class="col-md-6">
-						{{ form_label(form.nom, 'Nom de la recette', {'label_attr': {'class': 'form-label fw-bold'}}) }}
-						{{ form_widget(form.nom, {
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-light">
+                    <h3 class="mb-0">
+                        <i class="fas fa-image me-2"></i>Photo de la recette
+                    </h3>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        {{ form_label(form.imageFile, 'Sélectionner une image', {'label_attr': {'class': 'form-label'}}) }}
+                        {{ form_widget(form.imageFile, {
                             'attr': {
                                 'class': 'form-control',
-                                'placeholder': 'Entrez le nom de votre recette'
+                                'accept': 'image/*'
                             }
                         }) }}
-						{{ form_errors(form.nom) }}
-					</div>
-					<div class="col-md-6">
-						{{ form_label(form.categorie, 'Catégorie', {'label_attr': {'class': 'form-label fw-bold'}}) }}
-						{{ form_widget(form.categorie, {
-                            'attr': {
-                                'class': 'form-select'
-                            }
-                        }) }}
-					</div>
-					<div class="col-12">
-						{{ form_label(form.description, 'Description', {'label_attr': {'class': 'form-label fw-bold'}}) }}
-						{{ form_widget(form.description, {
-                            'attr': {
-                                'class': 'form-control',
-                                'rows': '3',
-                                'placeholder': 'Décrivez brièvement votre recette'
-                            }
-                        }) }}
-						{{ form_errors(form.description) }}
-					</div>
-				</div>
-			</div>
-		</div>
+                        <div class="mt-2">
+                            <img id="image-preview" src="#" alt="Aperçu" style="display: none; max-width: 200px; margin-top: 10px;">
+                        </div>
+                        {{ form_errors(form.imageFile) }}
+                    </div>
+                </div>
+            </div>
 
-		{# Liste des ingrédients #}
-		{{ include('repas/_ingredient_form.html.twig') }}
+            <div class="text-center mb-4">
+                <button type="submit" class="btn btn-primary btn-lg">
+                    <i class="fas fa-save me-2"></i>Enregistrer la recette
+                </button>
+                <a href="{{ path('index') }}" class="btn btn-secondary btn-lg ms-2">
+                    <i class="fas fa-arrow-left me-2"></i>Retour à la liste
+                </a>
+            </div>
 
-		{# Instructions #}
-		<div class="card shadow-sm mb-4">
-			<div class="card-header bg-light">
-				<h3 class="mb-0">
-					<i class="fas fa-book me-2"></i>Instructions de préparation
-				</h3>
-			</div>
-			<div class="card-body">
-				{{ form_label(form.recette, 'Instructions détaillées', {'label_attr': {'class': 'form-label fw-bold'}}) }}
-				{{ form_widget(form.recette, {
-                    'attr': {
-                        'class': 'form-control',
-                        'rows': '10',
-                        'placeholder': 'Détaillez les étapes de préparation de votre recette'
+        {{ form_end(form) }}
+    </div>
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    <script>
+        // Fonction pour initialiser Select2 sur un élément
+        function initializeSelect2(element) {
+            $(element).select2({
+                theme: 'bootstrap-5',
+                language: 'fr',
+                width: '100%',
+                matcher: function(params, data) {
+                    if ($.trim(params.term) === '') {
+                        return data;
                     }
-                }) }}
-				{{ form_errors(form.recette) }}
-			</div>
-		</div>
 
-		{# Assurez-vous que ces champs sont présents #}
-		{{ form_row(form._token) }}
-		
-		<div class="text-center mb-4">
-			<button type="submit" class="btn btn-primary btn-lg">
-				<i class="fas fa-save me-2"></i>Enregistrer la recette
-			</button>
-			<a href="{{ path('index') }}" class="btn btn-secondary btn-lg ms-2">
-				<i class="fas fa-arrow-left me-2"></i>Retour à la liste
-			</a>
-		</div>
+                    if (typeof data.text === 'undefined') {
+                        return null;
+                    }
 
-		{{ form_rest(form) }}
-		{{ form_end(form) }}
-	</div>
+                    const searchTerm = params.term.toLowerCase();
+                    const textToSearch = data.text.toLowerCase();
 
-	{% endblock %}
+                    if (textToSearch.startsWith(searchTerm)) {
+                        return data;
+                    }
 
-	{% block javascripts %}
-		{{ parent() }}
-		<script src="{{ asset('js/ingredients.js') }}"></script>
-		<script>
-			document.addEventListener('DOMContentLoaded', function() {
-				// Validation du formulaire principal uniquement
-				const repasForm = document.getElementById('repas-form');
-				if (repasForm) {
-					repasForm.addEventListener('submit', function(e) {
-						if (!this.checkValidity()) {
-							e.preventDefault();
-							e.stopPropagation();
-						}
-						this.classList.add('was-validated');
-					});
-				}
-			});
-		</script>
-	{% endblock %}
+                    return null;
+                }
+            });
+        }
 
-	{% block stylesheets %}
-		{{ parent() }}
-		<style>
-			/* Styles spécifiques à la page */
-		</style>
-	{% endblock %}
+        document.addEventListener('DOMContentLoaded', function() {
+            // Prévisualisation de l'image
+            document.getElementById('repas_imageFile').addEventListener('change', function(e) {
+                const preview = document.getElementById('image-preview');
+                const file = e.target.files[0];
+                const reader = new FileReader();
+
+                reader.onload = function(e) {
+                    preview.src = e.target.result;
+                    preview.style.display = 'block';
+                }
+
+                if (file) {
+                    reader.readAsDataURL(file);
+                }
+            });
+
+            // Initialiser Select2 sur les champs existants
+            $('.ingredient-select').each(function() {
+                initializeSelect2(this);
+            });
+
+            // Observer les nouveaux champs d'ingrédients ajoutés
+            const ingredientsContainer = document.querySelector('.ingredients-collection');
+            if (ingredientsContainer) {
+                const observer = new MutationObserver(function(mutations) {
+                    mutations.forEach(function(mutation) {
+                        mutation.addedNodes.forEach(function(node) {
+                            if (node.nodeType === 1) { // Element node
+                                const newSelect = node.querySelector('.ingredient-select');
+                                if (newSelect) {
+                                    initializeSelect2(newSelect);
+                                }
+                            }
+                        });
+                    });
+                });
+
+                observer.observe(ingredientsContainer, {
+                    childList: true,
+                    subtree: true
+                });
+            }
+        });
+    </script>
+{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <style>
+        .select2-container--default .select2-selection--single {
+            height: 38px;
+            padding: 5px;
+            border: 1px solid #ced4da;
+        }
+        .select2-container--default .select2-selection--single .select2-selection__arrow {
+            height: 36px;
+        }
+        .select2-container--default .select2-results__option--highlighted[aria-selected] {
+            background-color: #0d6efd;
+        }
+        .select2-container--default .select2-search--dropdown .select2-search__field {
+            padding: 8px;
+            border-radius: 4px;
+        }
+        .select2-dropdown {
+            border: 1px solid #ced4da;
+        }
+    </style>
+{% endblock %}

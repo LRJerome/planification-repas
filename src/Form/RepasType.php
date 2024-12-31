@@ -13,6 +13,9 @@ use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
 use Symfony\Component\Form\Extension\Core\Type\TextareaType;
 use Symfony\Component\Validator\Constraints\NotBlank;
 use Symfony\Component\Validator\Constraints\Count;
+use Vich\UploaderBundle\Form\Type\VichImageType;
+use Symfony\Component\Form\FormEvent;
+use Symfony\Component\Form\FormEvents;
 
 class RepasType extends AbstractType
 {
@@ -53,6 +56,10 @@ class RepasType extends AbstractType
                 'allow_delete' => true,
                 'by_reference' => false,
                 'required' => true,
+                'label' => false,
+                'entry_options' => [
+                    'label' => false
+                ],
                 'constraints' => [
                     new Count([
                         'min' => 1,
@@ -60,7 +67,29 @@ class RepasType extends AbstractType
                     ])
                 ]
             ])
+            ->add('imageFile', VichImageType::class, [
+                'required' => false,
+                'allow_delete' => true,
+                'delete_label' => 'Supprimer l\'image',
+                'download_uri' => false,
+                'image_uri' => true,
+                'asset_helper' => true,
+                'label' => 'Image de la recette',
+                'by_reference' => false
+            ])
         ;
+
+        // Ajouter un écouteur pour s'assurer que les relations sont correctement définies
+        $builder->addEventListener(FormEvents::SUBMIT, function (FormEvent $event) {
+            $repas = $event->getData();
+            
+            // S'assurer que chaque IngredientQuantite est lié au Repas
+            foreach ($repas->getIngredientQuantites() as $ingredientQuantite) {
+                if (!$ingredientQuantite->getRepas()) {
+                    $ingredientQuantite->setRepas($repas);
+                }
+            }
+        });
     }
 
     public function configureOptions(OptionsResolver $resolver)

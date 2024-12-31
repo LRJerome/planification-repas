@@ -1,139 +1,62 @@
 document.addEventListener('DOMContentLoaded', function() {
-    const addIngredientButton = document.getElementById('add-ingredient');
-    const ingredientsCollection = document.querySelector('.ingredients-collection');
-    const channel = new BroadcastChannel('ingredients-channel');
+    const addButton = document.querySelector('#add-ingredient');
+    const container = document.querySelector('.ingredients-collection');
+    let index = container ? container.children.length : 0;
 
-    if (addIngredientButton && ingredientsCollection) {
-        let index = document.querySelectorAll('.ingredient-row').length;
-        let prototypeHtml = ingredientsCollection.dataset.prototype;
+    if (addButton && container) {
+        addButton.addEventListener('click', function() {
+            console.log('Ajout d\'un nouvel ingrédient');
+            const prototype = container.dataset.prototype;
+            const newForm = prototype.replace(/__name__/g, index);
+            const div = document.createElement('div');
+            div.innerHTML = newForm;
+            div.classList.add('ingredient-item', 'mb-3');
+            container.appendChild(div);
+            index++;
 
-        // Fonction pour mettre à jour le prototype avec un nouvel ingrédient
-        function updatePrototype(ingredient) {
-            const tempDiv = document.createElement('div');
-            tempDiv.innerHTML = prototypeHtml;
-            
-            const select = tempDiv.querySelector('select');
-            if (select) {
-                // Créer la nouvelle option
-                const option = document.createElement('option');
-                option.value = ingredient.id;
-                option.textContent = ingredient.nom;
-                option.dataset.unite = ingredient.unite;
-                option.dataset.quantiteDefaut = ingredient.quantiteDefaut;
-                
-                // Ajouter l'option au select
-                select.appendChild(option);
-                
-                // Trier les options (sauf le placeholder)
-                const options = Array.from(select.options).slice(1);
-                options.sort((a, b) => a.text.localeCompare(b.text, 'fr', {sensitivity: 'base'}));
-                
-                // Reconstruire le select
-                select.innerHTML = '<option value="">Choisir un ingrédient</option>';
-                options.forEach(opt => select.appendChild(opt));
-                
-                // Mettre à jour le prototype
-                prototypeHtml = tempDiv.innerHTML;
-                ingredientsCollection.dataset.prototype = prototypeHtml;
-                
-                // console.log('Prototype mis à jour avec le nouvel ingrédient');
-            }
-        }
+            // Initialiser Select2 pour le nouveau champ
+            $(div).find('.ingredient-select').select2({
+                theme: 'bootstrap-5',
+                language: 'fr',
+                matcher: function(params, data) {
+                    // Si pas de recherche, retourner tous les éléments
+                    if ($.trim(params.term) === '') {
+                        return data;
+                    }
 
-        // Fonction pour mettre à jour les selects existants
-        function updateExistingSelects(ingredient) {
-            document.querySelectorAll('select[id*="ingredient"]').forEach(select => {
-                if (!select.querySelector(`option[value="${ingredient.id}"]`)) {
-                    const option = new Option(ingredient.nom, ingredient.id);
-                    option.dataset.unite = ingredient.unite;
-                    option.dataset.quantiteDefaut = ingredient.quantiteDefaut;
-                    
-                    // Ajouter l'option
-                    select.add(option);
-                    
-                    // Trier les options
-                    const options = Array.from(select.options).slice(1);
-                    options.sort((a, b) => a.text.localeCompare(b.text, 'fr', {sensitivity: 'base'}));
-                    
-                    // Reconstruire le select
-                    select.innerHTML = '<option value="">Choisir un ingrédient</option>';
-                    options.forEach(opt => select.add(opt));
-                    
-                    // Sélectionner le nouvel ingrédient
-                    select.value = ingredient.id;
-                    
-                    // console.log('Select existant mis à jour:', select.id);
+                    // Ne rien retourner si pas de données
+                    if (typeof data.text === 'undefined') {
+                        return null;
+                    }
+
+                    // Convertir en minuscules pour une recherche insensible à la casse
+                    const searchTerm = params.term.toLowerCase();
+                    const textToSearch = data.text.toLowerCase();
+
+                    // Vérifier si le texte commence par le terme recherché
+                    if (textToSearch.startsWith(searchTerm)) {
+                        return data;
+                    }
+
+                    // Si on arrive ici, ça ne correspond pas
+                    return null;
                 }
             });
-        }
-
-        // Fonction pour ajouter une nouvelle ligne d'ingrédient
-        function addIngredientRow() {
-            const newForm = prototypeHtml.replace(/__name__/g, index);
-            const div = document.createElement('div');
-            div.classList.add('ingredient-row', 'mb-3', 'row', 'align-items-end');
-            
-            // Extraire les éléments select et input
-            const tempDiv = document.createElement('div');
-            tempDiv.innerHTML = newForm;
-            const select = tempDiv.querySelector('select');
-            const input = tempDiv.querySelector('input');
-            
-            // Créer la structure HTML
-            div.innerHTML = `
-                <div class="col-md-6">
-                    <div class="form-group">
-                        <label class="form-label">Ingrédient</label>
-                        ${select.outerHTML}
-                    </div>
-                </div>
-                <div class="col-md-4">
-                    <div class="form-group">
-                        <label class="form-label">Quantité</label>
-                        ${input.outerHTML}
-                    </div>
-                </div>
-                <div class="col-md-2">
-                    <button type="button" class="btn btn-danger btn-sm remove-ingredient w-100">
-                        <i class="fas fa-trash me-1"></i>Supprimer
-                    </button>
-                </div>
-            `;
-
-            // Ajouter les classes Bootstrap
-            div.querySelector('select').classList.add('form-select');
-            div.querySelector('input').classList.add('form-control');
-
-            ingredientsCollection.appendChild(div);
-            index++;
-        }
-
-        // Gestionnaire d'événement pour le bouton d'ajout
-        addIngredientButton.addEventListener('click', function(e) {
-            e.preventDefault();
-            addIngredientRow();
         });
-
-        // Gestion de la suppression des ingrédients
-        ingredientsCollection.addEventListener('click', function(e) {
-            const removeButton = e.target.closest('.remove-ingredient');
-            if (removeButton) {
-                removeButton.closest('.ingredient-row').remove();
-            }
-        });
-
-        // Écouter les messages du canal de diffusion
-        channel.onmessage = function(event) {
-            // console.log('Message reçu via BroadcastChannel:', event.data);
-            
-            if (event.data.type === 'new-ingredient') {
-                const ingredient = event.data.ingredient;
-                // console.log('Nouvel ingrédient à ajouter:', ingredient);
-
-                // Mettre à jour le prototype et les selects existants
-                updatePrototype(ingredient);
-                updateExistingSelects(ingredient);
-            }
-        };
+    } else {
+        console.error('Bouton d\'ajout ou conteneur non trouvé');
     }
-}); 
+
+    window.addEventListener('message', function(event) {
+        if (event.data.type === 'ingredientAdded') {
+            console.log('Ingrédient ajouté:', event.data);
+            const selects = document.querySelectorAll('.ingredient-select');
+            const lastSelect = selects[selects.length - 1];
+            const newOption = new Option(event.data.nom, event.data.id, false, false);
+            
+            newOption.dataset.unite = event.data.unite;
+            lastSelect.add(newOption);
+            // Ne pas modifier la sélection actuelle
+        }
+    });
+});

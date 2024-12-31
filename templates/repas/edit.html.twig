@@ -6,7 +6,13 @@
 <div class="container mt-4">
     <h1 class="text-center mb-4">Modifier la recette</h1>
 
-    {{ form_start(form) }}
+    {{ form_start(form, {
+        'attr': {
+            'id': 'repas-form',
+            'class': 'needs-validation',
+            'novalidate': 'novalidate'
+        }
+    }) }}
         {# Informations générales #}
         <div class="card shadow-sm mb-4">
             <div class="card-header bg-light">
@@ -17,31 +23,19 @@
             <div class="card-body">
                 <div class="row g-3">
                     <div class="col-md-6">
-                        {{ form_label(form.nom, 'Nom de la recette', {'label_attr': {'class': 'form-label fw-bold'}}) }}
-                        {{ form_widget(form.nom, {
-                            'attr': {
-                                'class': 'form-control',
-                                'placeholder': 'Entrez le nom de votre recette'
-                            }
-                        }) }}
+                        {{ form_label(form.nom, 'Nom de la recette', {'label_attr': {'class': 'form-label'}}) }}
+                        {{ form_widget(form.nom, {'attr': {'class': 'form-control'}}) }}
+                        {{ form_errors(form.nom) }}
                     </div>
                     <div class="col-md-6">
-                        {{ form_label(form.categorie, 'Catégorie', {'label_attr': {'class': 'form-label fw-bold'}}) }}
-                        {{ form_widget(form.categorie, {
-                            'attr': {
-                                'class': 'form-select'
-                            }
-                        }) }}
+                        {{ form_label(form.categorie, 'Catégorie', {'label_attr': {'class': 'form-label'}}) }}
+                        {{ form_widget(form.categorie, {'attr': {'class': 'form-select'}}) }}
+                        {{ form_errors(form.categorie) }}
                     </div>
                     <div class="col-12">
-                        {{ form_label(form.description, 'Description', {'label_attr': {'class': 'form-label fw-bold'}}) }}
-                        {{ form_widget(form.description, {
-                            'attr': {
-                                'class': 'form-control',
-                                'rows': '3',
-                                'placeholder': 'Décrivez brièvement votre recette'
-                            }
-                        }) }}
+                        {{ form_label(form.description, 'Description', {'label_attr': {'class': 'form-label'}}) }}
+                        {{ form_widget(form.description, {'attr': {'class': 'form-control', 'rows': '3'}}) }}
+                        {{ form_errors(form.description) }}
                     </div>
                 </div>
             </div>
@@ -58,14 +52,37 @@
                 </h3>
             </div>
             <div class="card-body">
-                {{ form_label(form.recette, 'Instructions détaillées', {'label_attr': {'class': 'form-label fw-bold'}}) }}
-                {{ form_widget(form.recette, {
-                    'attr': {
-                        'class': 'form-control',
-                        'rows': '10',
-                        'placeholder': 'Détaillez les étapes de préparation de votre recette'
-                    }
-                }) }}
+                {{ form_label(form.recette, 'Instructions détaillées', {'label_attr': {'class': 'form-label'}}) }}
+                {{ form_widget(form.recette, {'attr': {'class': 'form-control', 'rows': '10'}}) }}
+                {{ form_errors(form.recette) }}
+            </div>
+        </div>
+
+        {# Ajout du bloc pour l'image #}
+        <div class="card shadow-sm mb-4">
+            <div class="card-header bg-light">
+                <h3 class="mb-0">
+                    <i class="fas fa-image me-2"></i>Photo de la recette
+                </h3>
+            </div>
+            <div class="card-body">
+                <div class="mb-3">
+                    {{ form_label(form.imageFile, 'Sélectionner une image', {'label_attr': {'class': 'form-label'}}) }}
+                    {{ form_widget(form.imageFile, {
+                        'attr': {
+                            'class': 'form-control',
+                            'accept': 'image/*'
+                        }
+                    }) }}
+                    <div class="mt-2">
+                        {% if repas.imageName %}
+                            <img id="image-preview" src="{{ vich_uploader_asset(repas, 'imageFile') }}" alt="Image actuelle" style="max-width: 200px; margin-top: 10px;">
+                        {% else %}
+                            <img id="image-preview" src="#" alt="Aperçu" style="display: none; max-width: 200px; margin-top: 10px;">
+                        {% endif %}
+                    </div>
+                    {{ form_errors(form.imageFile) }}
+                </div>
             </div>
         </div>
 
@@ -84,4 +101,49 @@
 {% block javascripts %}
     {{ parent() }}
     <script src="{{ asset('js/ingredients.js') }}"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Validation du formulaire
+            const form = document.getElementById('repas-form');
+            if (form) {
+                form.addEventListener('submit', function(e) {
+                    if (!this.checkValidity()) {
+                        e.preventDefault();
+                        e.stopPropagation();
+                    }
+                    this.classList.add('was-validated');
+                });
+            }
+
+            // Configuration Select2 pour les ingrédients
+            $('.ingredient-select').select2({
+                theme: 'bootstrap-5',
+                language: 'fr',
+                width: '100%',
+                matcher: function(params, data) {
+                    // Si pas de recherche, retourner tous les éléments
+                    if ($.trim(params.term) === '') {
+                        return data;
+                    }
+
+                    // Ne rien retourner si pas de données
+                    if (typeof data.text === 'undefined') {
+                        return null;
+                    }
+
+                    // Convertir en minuscules pour une recherche insensible à la casse
+                    const searchTerm = params.term.toLowerCase();
+                    const textToSearch = data.text.toLowerCase();
+
+                    // Vérifier si le texte commence par le terme recherché
+                    if (textToSearch.startsWith(searchTerm)) {
+                        return data;
+                    }
+
+                    // Si on arrive ici, ça ne correspond pas
+                    return null;
+                }
+            });
+        });
+    </script>
 {% endblock %}

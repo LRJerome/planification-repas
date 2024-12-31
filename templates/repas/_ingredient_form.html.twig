@@ -2,39 +2,114 @@
 <div class="card shadow-sm mb-4">
     <div class="card-header bg-light d-flex justify-content-between align-items-center">
         <h3 class="mb-0">
-            <i class="fas fa-list me-2"></i>Liste des ingrédients
+            <i class="fas fa-list me-2"></i>Ingrédients
         </h3>
-        <a href="{{ path('ingredient_new') }}" class="btn btn-primary btn-sm" target="_blank" id="new-ingredient-btn">
+        <button type="button" 
+                class="btn btn-sm btn-success" 
+                data-bs-toggle="modal" 
+                data-bs-target="#nouvelIngredientModal">
             <i class="fas fa-plus me-1"></i>Nouvel ingrédient
-        </a>
+        </button>
     </div>
     <div class="card-body">
-        <div class="ingredients-collection" data-prototype="{{ form_widget(form.ingredientQuantites.vars.prototype)|e('html_attr') }}">
+        {{ form_errors(form.ingredientQuantites) }}
+        
+        <div class="ingredients-collection" 
+             data-prototype="{{ include('repas/_ingredient_prototype.html.twig', { 'form': form.ingredientQuantites.vars.prototype })|e('html_attr') }}">
             {% for ingredientQuantiteField in form.ingredientQuantites %}
-                <div class="ingredient-row mb-3 row align-items-end">
-                    <div class="col-md-6">
-                        {{ form_row(ingredientQuantiteField.ingredient, {
-                            'label_attr': {'class': 'form-label'},
-                            'attr': {'class': 'form-select ingredient-select'}
-                        }) }}
-                    </div>
-                    <div class="col-md-4">
-                        {{ form_row(ingredientQuantiteField.quantite, {
-                            'label_attr': {'class': 'form-label'},
-                            'attr': {'class': 'form-control'}
-                        }) }}
-                    </div>
-                    <div class="col-md-2">
-                        <button type="button" class="btn btn-danger btn-sm remove-ingredient w-100">
-                            <i class="fas fa-trash me-1"></i>Supprimer
-                        </button>
-                    </div>
-                </div>
+                {{ include('repas/_ingredient_prototype.html.twig', { 'form': ingredientQuantiteField }) }}
             {% endfor %}
         </div>
 
-        <button type="button" class="btn btn-success mt-3" id="add-ingredient">
-            <i class="fas fa-plus me-1"></i>Ajouter un ingrédient
-        </button>
+        <div class="text-center mt-3">
+            <button type="button" class="btn btn-primary" id="add-ingredient">
+                <i class="fas fa-plus me-1"></i>Ajouter un ingrédient
+            </button>
+        </div>
     </div>
 </div>
+
+{# Modal avec iframe #}
+<div class="modal fade" id="nouvelIngredientModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Ajouter un ingrédient</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <iframe name="ingredient-frame" style="width:100%;height:400px;border:none;" 
+                        src="{{ path('ingredient_new', {'popup': true}) }}">
+                </iframe>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Fonction pour mettre à jour l'unité
+    function updateUnite(select) {
+        const row = select.closest('.ingredient-row');
+        const uniteDisplay = row.querySelector('.unite-display');
+        const selectedOption = select.options[select.selectedIndex];
+        
+        if (selectedOption && selectedOption.dataset.unite) {
+            console.log('Mise à jour unité:', selectedOption.dataset.unite);
+            uniteDisplay.textContent = selectedOption.dataset.unite;
+        } else {
+            uniteDisplay.textContent = '';
+        }
+    }
+
+    // Initialiser Select2 et les événements
+    function initializeSelect(select) {
+        $(select).select2({
+            theme: 'bootstrap-5',
+            width: '100%'
+        }).on('change', function() {
+            updateUnite(this);
+        });
+
+        // Mettre à jour l'unité si une valeur est déjà sélectionnée
+        if (select.value) {
+            updateUnite(select);
+        }
+    }
+
+    // Initialiser les selects existants
+    document.querySelectorAll('.ingredient-select').forEach(select => {
+        initializeSelect(select);
+    });
+
+    // Gérer l'ajout d'ingrédient
+    document.getElementById('add-ingredient').addEventListener('click', function() {
+        const collection = document.querySelector('.ingredients-collection');
+        const prototype = collection.dataset.prototype;
+        const index = document.querySelectorAll('.ingredient-row').length;
+        
+        // Ajouter le nouveau formulaire
+        collection.insertAdjacentHTML('beforeend', prototype.replace(/__name__/g, index));
+        
+        // Initialiser le nouveau select
+        const newSelect = collection.lastElementChild.querySelector('.ingredient-select');
+        if (newSelect) {
+            initializeSelect(newSelect);
+        }
+    });
+
+    // Gérer la suppression d'ingrédient
+    document.addEventListener('click', function(e) {
+        if (e.target.matches('.remove-ingredient') || e.target.closest('.remove-ingredient')) {
+            const row = e.target.closest('.ingredient-row');
+            if (row) {
+                const select = row.querySelector('.ingredient-select');
+                if (select) {
+                    $(select).select2('destroy');
+                }
+                row.remove();
+            }
+        }
+    });
+});
+</script>

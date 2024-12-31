@@ -18,19 +18,27 @@ class IngredientType extends AbstractType
             ->add('nom', TextType::class, [
                 'label' => 'Nom de l\'ingrédient',
                 'required' => true,
-                'attr' => ['class' => 'form-control']
+                'attr' => [
+                    'class' => 'form-control',
+                    'placeholder' => 'Ex: Farine, Sucre, Lait...'
+                ]
             ])
             ->add('unite', ChoiceType::class, [
                 'label' => 'Unité',
                 'required' => true,
                 'choices' => [
-                    'Grammes (g)' => 'g',
-                    'Millilitres (ml)' => 'ml',
-                    'Unité' => 'unité',
+                    'Grammes' => 'g',
+                    'Millilitres' => 'ml',
+                    'Centilitres' => 'cl',
+                    'Pièce' => 'piece',
                     'Cuillère à soupe' => 'cas',
                     'Cuillère à café' => 'cac',
-                    'Pièce' => 'piece'
+                    'Pincée' => 'pincée'
+                    
                 ],
+                'choice_translation_domain' => false,
+                'expanded' => false,
+                'multiple' => false,
                 'attr' => ['class' => 'form-select']
             ])
             ->add('quantiteDefaut', NumberType::class, [
@@ -40,7 +48,8 @@ class IngredientType extends AbstractType
                 'attr' => [
                     'class' => 'form-control',
                     'min' => 0,
-                    'step' => 'any'
+                    'step' => 'any',
+                    'placeholder' => 'Ex: 100'
                 ]
             ])
         ;

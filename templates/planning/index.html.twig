@@ -1,243 +1,346 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Planning des repas{% endblock %}
+{% block title %}Planning des repas
+{% endblock %}
 
 {% block body %}
-<div class="container mt-4">
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <h1 class="">Planning des repas</h1>
-        <div class="btn-group">
-            <button onclick="window.print()" class="btn btn-outline-secondary">
-                <i class="fas fa-print me-2"></i>Imprimer
-            </button>
-            <a href="{{ path('planning_new') }}" class="btn btn-primary">
-                <i class="fas fa-plus me-2"></i>Ajouter au planning
-            </a>
-        </div>
-    </div>
-    
-    <div class="card shadow-sm">
-        <div class="card-body">
-            <div class="table-responsive">
-                <table class="table table-bordered table-hover">
-                    <thead class="table-light">
-                        <tr class="text-center">
-                            <th class="align-middle" style="min-width: 120px;">Date</th>
-                            <th class="align-middle" style="min-width: 150px;">Petit Déjeuner</th>
-                            <th class="align-middle" style="min-width: 150px;">En-cas Matin</th>
-                            <th class="align-middle" style="min-width: 150px;">Déjeuner</th>
-                            <th class="align-middle" style="min-width: 150px;">En-cas Après-midi</th>
-                            <th class="align-middle" style="min-width: 150px;">Dîner</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for dateInfo in plannings %}
-                        <tr>
-                            <td class="text-center">
-                                <strong>{{ dateInfo.date|date('l')|trans({}, 'messages')|capitalize }}</strong><br>
-                                <small class="text-muted">{{ dateInfo.date|date('d/m/Y') }}</small>
-                            </td>
-                            {% if dateInfo.planning %}
-                                {% for repasType in ['petitDejeuner', 'encasMatin', 'dejeuner', 'encasApresMidi', 'diner'] %}
-                                    <td class="text-center">
-                                        {% set repas = attribute(dateInfo.planning, repasType) %}
-                                        {% if repas %}
-                                            <div class="meal-info p-2">
-                                                <div class="mb-2">
-                                                    <strong title="{{ repas.nom }}">
-                                                        {{ repas.nom|length > 25 ? repas.nom|slice(0, 25) ~ '...' : repas.nom }}
-                                                    </strong>
-                                                </div>
-                                                {% if repas.categorie %}
-                                                    <span class="badge bg-{{ repas.categorie == 'low_carb' ? 'success' : 
-                                                               repas.categorie == 'post_training' ? 'primary' : 
-                                                               repas.categorie == 'en_cas' ? 'warning' : 
-                                                               'secondary' }}">
-                                                        {{ repas.categorie|replace({'_': ' '})|capitalize }}
-                                                    </span>
-                                                {% endif %}
-                                                <div class="mt-2">
-                                                    <small class="text-muted">
-                                                        <i class="fas fa-users me-1"></i>
-                                                        {{ attribute(dateInfo.planning, 'nombrePersonnes' ~ repasType|capitalize) ?? '0' }} pers.
-                                                    </small>
-                                                </div>
-                                                <div class="mt-2 no-print">
-                                                    <a href="{{ path('repas_show', {'id': repas.id}) }}" 
-                                                       class="btn btn-sm btn-outline-primary"
-                                                       title="Voir la recette">
-                                                        <i class="fas fa-eye"></i>
-                                                    </a>
-                                                </div>
-                                            </div>
-                                        {% else %}
-                                            <span class="text-muted">-</span>
-                                        {% endif %}
-                                    </td>
-                                {% endfor %}
-                            {% else %}
-                                <td colspan="5" class="text-center text-muted">Aucun planning pour cette date</td>
-                            {% endif %}
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
-            </div>
-        </div>
-    </div>
-</div>
+	<div class="container mt-4">
+		<div class="print-only-date d-none d-print-block">
+			Imprimé le {{ "now"|date('d/m/Y') }}
+		</div>
+
+		<div class="d-flex justify-content-between align-items-center mb-4">
+			<h1 class="">Planning des repas</h1>
+			<div class="btn-group">
+				<button onclick="window.print()" class="btn btn-outline-secondary">
+					<i class="fas fa-print me-2"></i>Imprimer
+				</button>
+				<a href="{{ path('planning_new') }}" class="btn btn-primary">
+					<i class="fas fa-plus me-2"></i>Ajouter au planning
+				</a>
+			</div>
+		</div>
+
+		<div class="card shadow-sm">
+			<div class="card-body">
+				<div class="table-responsive">
+					<table class="table table-bordered table-hover">
+						<thead class="table-light">
+							<tr class="text-center">
+								<th class="align-middle" style="min-width: 120px;">Date</th>
+								<th class="align-middle" style="min-width: 150px;">Petit Déjeuner</th>
+								<th class="align-middle" style="min-width: 150px;">En-cas Matin</th>
+								<th class="align-middle" style="min-width: 150px;">Déjeuner</th>
+								<th class="align-middle" style="min-width: 150px;">En-cas Après-midi</th>
+								<th class="align-middle" style="min-width: 150px;">Dîner</th>
+								<th class="align-middle" style="min-width: 100px;">Entrainements</th>
+							</tr>
+						</thead>
+						<tbody>
+							{% for dateInfo in plannings %}
+								<tr>
+									<td class="text-center">
+										<strong>{{ dateInfo.date|date('l')|trans({}, 'messages')|capitalize }}</strong><br>
+										<small class="text-muted">{{ dateInfo.date|date('d/m/Y') }}</small>
+									</td>
+									{% for mealType in ['petitDejeuner', 'encasMatin', 'dejeuner', 'encasApresMidi', 'diner'] %}
+										<td class="text-center">
+											{% set displayed = false %}
+											{% for planning in dateInfo.plannings|reverse %}
+												{% set repas = attribute(planning, mealType) %}
+												{% if repas and not displayed %}
+													{% set displayed = true %}
+													<div class="meal-info p-2">
+														<div class="mb-2">
+															<strong title="{{ repas.nom }}">
+																{{ repas.nom|length > 25 ? repas.nom|slice(0, 25) ~ '...' : repas.nom }}
+															</strong>
+														</div>
+														{% set badge_classes = {
+															'low-carb': 'bg-success',
+															'post-training': 'bg-primary',
+															'en-cas': 'bg-warning text-dark',
+															'autre': 'bg-info text-dark'
+														} %}
+														<span class="badge {{ badge_classes[repas.categorie|lower] ?? 'bg-secondary' }}">
+															{{ repas.categorie|replace({'_': ' '})|title }}
+														</span>
+														<div class="mt-2">
+															<small class="text-muted">
+																<i class="fas fa-users me-1"></i>
+																{{ attribute(planning, 'nombrePersonnes' ~ mealType|capitalize) ?? '0' }}
+																pers.
+															</small>
+														</div>
+														<div class="mt-2 no-print">
+															<a href="{{ path('repas_show', {
+																'id': repas.id,
+																'nombrePersonnes': attribute(planning, 'nombrePersonnes' ~ mealType|capitalize)
+															}) }}" class="btn btn-sm btn-outline-primary" title="Voir la recette">
+																<i class="fas fa-eye"></i>
+															</a>
+														</div>
+													</div>
+												{% endif %}
+											{% endfor %}
+											{% if not displayed %}
+												<span class="text-muted">-</span>
+											{% endif %}
+										</td>
+									{% endfor %}
+									<td class="text-center">
+										<div class="training-container">
+											<textarea class="form-control training-input" rows="1" placeholder="Entraînement..."></textarea>
+										</div>
+									</td>
+								</tr>
+							{% endfor %}
+						</tbody>
+					</table>
+				</div>
+			</div>
+		</div>
+	</div>
 {% endblock %}
 
 {% block stylesheets %}
+	{{ parent() }}
+	{% include 'styles/_meal_types.html.twig' %}
+	<style>
+		/* Styles pour l'affichage normal */
+		.meal-info {
+			background-color: #f8f9fa;
+			border-radius: 0.25rem;
+			transition: all 0.2s ease-in-out;
+		}
+		.meal-info:hover {
+			background-color: #e9ecef;
+			transform: translateY(-2px);
+		}
+		.table td {
+			vertical-align: middle;
+		}
+		.badge {
+			font-weight: normal;
+		}
+
+		/* Styles pour l'impression */
+		@media print {
+			.no-print {
+				display: none !important;
+			}
+
+			/* Masquer les éléments non nécessaires */
+			.btn-group,
+			.btn,
+			.navbar,
+			.footer {
+				display: none !important;
+			}
+
+			/* Reset des marges et padding */
+			body {
+				margin: 0 !important;
+				padding: 0 !important;
+			}
+
+			.container {
+				max-width: 100% !important;
+				width: 100% !important;
+				padding: 0 !important;
+				margin: 0 !important;
+			}
+
+			/* Ajustements pour tenir sur une page */
+			.table {
+				font-size: 7pt !important; /* Réduit encore un peu la taille de police */
+				table-layout: fixed !important; /* Force une largeur fixe pour les colonnes */
+			}
+
+			.table td,
+			.table th {
+				padding: 4px !important; /* Réduire le padding */
+				background-color: white !important;
+				border: 1px solid #dee2e6 !important;
+			}
+
+			/* Optimisations diverses */
+			.card {
+				box-shadow: none !important;
+				border: none !important;
+				margin: 0 !important;
+				padding: 0 !important;
+			}
+
+			.card-body {
+				padding: 0 !important;
+			}
+
+			.meal-info {
+				page-break-inside: avoid !important;
+				padding: 1px !important;
+			}
+
+			/* Réduire les espacements */
+			.mb-1,
+			.mb-2,
+			.mb-3,
+			.mb-4 {
+				margin-bottom: 2px !important;
+			}
+
+			.mt-1,
+			.mt-2,
+			.mt-3,
+			.mt-4 {
+				margin-top: 2px !important;
+			}
+
+			/* Ajuster la taille des badges et icônes */
+			.badge {
+				padding: 2px 4px !important;
+				font-size: 7pt !important;
+			}
+
+			.fas {
+				font-size: 7pt !important;
+			}
+
+			/* Forcer l'orientation paysage et éviter les sauts de page */
+			@page {
+				size: landscape;
+				margin: 5mm !important; /* Réduire les marges */
+				
+				@top-right {
+					content: "Imprimé le {{ "now"|date('d/m/Y') }}";
+					font-size: 8pt;
+					color: #666;
+				}
+			}
+
+			/* Masquer le bouton voir la recette à l'impression */
+			.btn-outline-primary {
+				display: none !important;
+			}
+
+			/* Optimiser l'affichage du texte */
+			.text-muted {
+				font-size: 7pt !important;
+			}
+
+			strong {
+				font-size: 8pt !important;
+			}
+
+			/* Ajuster l'en-tête du tableau */
+			thead th {
+				font-size: 9pt !important;
+				font-weight: bold !important;
+				background-color: #f8f9fa !important;
+			}
+
+			/* Définir des largeurs spécifiques pour chaque colonne */
+			.table th:nth-child(1) {
+				/* Date */
+				width: 12% !important;
+			}
+			.table th:nth-child(2), /* Petit Déjeuner */
+			.table th:nth-child(3), /* En-cas Matin */
+			.table th:nth-child(4), /* Déjeuner */
+			.table th:nth-child(5), /* En-cas Après-midi */
+			.table th:nth-child(6) {
+				/* Dîner */
+				width: 15% !important;
+			}
+			.table th:nth-child(7) {
+				/* Entrainements */
+				width: 13% !important;
+			}
+
+			.print-only-date {
+				display: block !important;
+				text-align: right;
+				font-size: 8pt;
+				color: #666;
+				margin-bottom: 5mm;
+				position: fixed;
+				top: 5mm;
+				right: 5mm;
+			}
+
+			.fs-3 {
+				font-size: 1.75rem !important;
+			}
+		}
+
+		.meal-checkbox {
+			cursor: pointer;
+		}
+
+		.meal-info strong {
+			max-width: 120px !important; /* Limite la largeur du titre du repas */
+			display: inline-block;
+			overflow: hidden;
+			text-overflow: ellipsis;
+			white-space: nowrap;
+			font-size: 7pt !important;
+		}
+
+		@media print {
+			.form-check {
+				margin: 0 !important;
+				padding: 0 !important;
+			}
+
+			.form-check-input {
+				width: 10px !important;
+				height: 10px !important;
+				margin-right: 2px !important;
+			}
+		}
+
+		/* Cache la date en affichage normal */
+		.print-only-date {
+			display: none;
+		}
+
+		.training-container {
+			display: flex;
+			justify-content: center;
+			align-items: center;
+			height: 100%; /* Assure que le conteneur prend toute la hauteur de la cellule */
+		}
+
+		.training-input {
+			width: 90%; /* Ajuste la largeur du textarea */
+			border-radius: 0.25rem; /* Coins arrondis */
+			border: 1px solid #ced4da; /* Bordure standard */
+			transition: border-color 0.2s; /* Transition pour le changement de couleur de bordure */
+			overflow: hidden; /* Masque le débordement */
+			resize: none; /* Empêche le redimensionnement */
+		}
+
+		.training-input:focus {
+			border-color: #80bdff; /* Couleur de bordure au focus */
+			outline: none; /* Supprime le contour par défaut */
+		}
+
+		/* Styles pour l'impression */
+		@media print {
+			.training-input {
+				width: 100% !important; /* Prend toute la largeur lors de l'impression */
+				border: 1px solid #000 !important; /* Bordure noire pour l'impression */
+				background-color: #fff !important; /* Fond blanc pour l'impression */
+				font-size: 7pt !important; /* Ajuste la taille de la police pour l'impression */
+				overflow: hidden; /* Masque le débordement */
+				white-space: nowrap; /* Empêche le retour à la ligne */
+				text-overflow: ellipsis; /* Ajoute des points de suspension si le texte déborde */
+			}
+		}
+	</style>
+{% endblock %}
+
+{% block javascripts %}
     {{ parent() }}
-    {% include 'styles/_meal_types.html.twig' %}
-    <style>
-        /* Styles pour l'affichage normal */
-        .meal-info {
-            background-color: #f8f9fa;
-            border-radius: 0.25rem;
-            transition: all 0.2s ease-in-out;
-        }
-        .meal-info:hover {
-            background-color: #e9ecef;
-            transform: translateY(-2px);
-        }
-        .table td {
-            vertical-align: middle;
-        }
-        .badge {
-            font-weight: normal;
-        }
-
-        /* Styles pour l'impression */
-        @media print {
-            .no-print {
-                display: none !important;
-            }
-            
-            /* Masquer les éléments non nécessaires */
-            .btn-group, 
-            .btn,
-            .navbar,
-            .footer {
-                display: none !important;
-            }
-
-            /* Reset des marges et padding */
-            body {
-                margin: 0 !important;
-                padding: 0 !important;
-            }
-
-            .container {
-                max-width: 100% !important;
-                width: 100% !important;
-                padding: 0 !important;
-                margin: 0 !important;
-            }
-
-            /* Ajustements pour tenir sur une page */
-            .table {
-                font-size: 8pt !important; /* Réduire la taille de la police */
-                width: 100% !important;
-                margin: 0 !important;
-                border-collapse: collapse !important;
-            }
-
-            .table td, 
-            .table th {
-                padding: 4px !important; /* Réduire le padding */
-                background-color: white !important;
-                border: 1px solid #dee2e6 !important;
-            }
-
-            /* Optimisations diverses */
-            .card {
-                box-shadow: none !important;
-                border: none !important;
-                margin: 0 !important;
-                padding: 0 !important;
-            }
-
-            .card-body {
-                padding: 0 !important;
-            }
-
-            .meal-info {
-                page-break-inside: avoid !important;
-                padding: 2px !important;
-            }
-
-            /* Réduire les espacements */
-            .mb-1, .mb-2, .mb-3, .mb-4 {
-                margin-bottom: 2px !important;
-            }
-
-            .mt-1, .mt-2, .mt-3, .mt-4 {
-                margin-top: 2px !important;
-            }
-
-            /* Ajuster la taille des badges et icônes */
-            .badge {
-                padding: 2px 4px !important;
-                font-size: 7pt !important;
-            }
-
-            .fas {
-                font-size: 7pt !important;
-            }
-
-            /* Forcer l'orientation paysage et éviter les sauts de page */
-            @page {
-                size: landscape;
-                margin: 10mm;
-            }
-
-            /* Masquer le bouton voir la recette à l'impression */
-            .btn-outline-primary {
-                display: none !important;
-            }
-
-            /* Optimiser l'affichage du texte */
-            .text-muted {
-                font-size: 7pt !important;
-            }
-
-            strong {
-                font-size: 8pt !important;
-            }
-
-            /* Ajuster l'en-tête du tableau */
-            thead th {
-                font-size: 9pt !important;
-                font-weight: bold !important;
-                background-color: #f8f9fa !important;
-            }
-        }
-
-        .meal-checkbox {
-            cursor: pointer;
-        }
-
-        .meal-info strong {
-            max-width: 150px;
-            display: inline-block;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            white-space: nowrap;
-        }
-
-        @media print {
-            .form-check {
-                margin: 0 !important;
-                padding: 0 !important;
-            }
-            
-            .form-check-input {
-                width: 10px !important;
-                height: 10px !important;
-                margin-right: 2px !important;
-            }
-        }
-    </style>
+    <script src="{{ asset('js/planning.js') }}"></script>
 {% endblock %}

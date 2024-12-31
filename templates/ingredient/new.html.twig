@@ -1,38 +1,32 @@
 {% extends 'base.html.twig' %}
 
 {% block body %}
-<div class="container mt-4">
-    <div class="card shadow">
-        <div class="card-header bg-primary text-white">
-            <h2 class="mb-0"><i class="fas fa-plus-circle me-2"></i>Nouvel ingrédient</h2>
-        </div>
-        <div class="card-body">
-            {{ form_start(form, {'attr': {'class': 'needs-validation', 'novalidate': 'novalidate'}}) }}
-            
-            <div class="row g-3">
-                <div class="col-md-6">
-                    {{ form_row(form.nom, {
-                        'attr': {
-                            'class': 'form-control form-control-lg'
-                        }
-                    }) }}
-                </div>
-                <div class="col-md-3">
-                    {{ form_row(form.unite) }}
-                </div>
-                <div class="col-md-3">
-                    {{ form_row(form.quantiteDefaut) }}
-                </div>
+    <div class="container-fluid p-3">
+        <h4 class="mb-3">Nouvel ingrédient</h4>
+        {{ form_start(form) }}
+            <div class="mb-3">
+                {{ form_row(form.nom, {
+                    'attr': {
+                        'class': 'form-control',
+                        'placeholder': 'Ex: Farine, Sucre, Lait...'
+                    }
+                }) }}
             </div>
-
-            <div class="mt-4">
-                <button type="submit" class="btn btn-primary">
-                    <i class="fas fa-save me-2"></i>Enregistrer
-                </button>
+            <div class="mb-3">
+                {{ form_row(form.unite, {
+                    'attr': {'class': 'form-select'}
+                }) }}
             </div>
-            
-            {{ form_end(form) }}
-        </div>
+            <div class="mb-3">
+                {{ form_row(form.quantiteDefaut, {
+                    'attr': {
+                        'class': 'form-control',
+                        'min': '0',
+                        'step': 'any'
+                    }
+                }) }}
+            </div>
+            <button type="submit" class="btn btn-primary w-100">Enregistrer</button>
+        {{ form_end(form) }}
     </div>
-</div>
 {% endblock %}

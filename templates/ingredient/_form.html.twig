@@ -1,12 +1,36 @@
-{{ form_start(form) }}
+{{ form_start(form, {'attr': {'class': 'form-group needs-validation', 'novalidate': 'novalidate'}}) }}
     <div class="mb-3">
-        {{ form_row(form.nom) }}
+        {{ form_label(form.nom, 'Nom de l\'ingrédient', {'label_attr': {'class': 'form-label'}}) }}
+        {{ form_widget(form.nom, {
+            'attr': {
+                'class': 'form-control',
+                'placeholder': 'Ex: Farine, Sucre, Lait...'
+            }
+        }) }}
+        {{ form_errors(form.nom) }}
     </div>
+
     <div class="mb-3">
-        {{ form_row(form.unite) }}
+        {{ form_label(form.unite, 'Unité', {'label_attr': {'class': 'form-label'}}) }}
+        {{ form_widget(form.unite, {
+            'attr': {'class': 'form-select'}
+        }) }}
+        {{ form_errors(form.unite) }}
     </div>
+
     <div class="mb-3">
-        {{ form_row(form.quantiteDefaut) }}
+        {{ form_label(form.quantiteDefaut, 'Quantité par défaut', {'label_attr': {'class': 'form-label'}}) }}
+        {{ form_widget(form.quantiteDefaut, {
+            'attr': {
+                'class': 'form-control',
+                'min': '0',
+                'step': 'any',
+                'placeholder': 'Ex: 100'
+            },
+            'data': form.vars.value.quantiteDefaut ?? 1
+        }) }}
+        <small class="form-text text-muted">Quantité habituellement utilisée dans les recettes</small>
+        {{ form_errors(form.quantiteDefaut) }}
     </div>
 
     <button class="btn btn-primary">

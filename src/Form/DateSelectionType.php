@@ -4,7 +4,6 @@ namespace App\Form;
 
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\DateType;
-use Symfony\Component\Form\Extension\Core\Type\SubmitType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 
@@ -20,9 +19,6 @@ class DateSelectionType extends AbstractType
             ->add('dateFin', DateType::class, [
                 'label' => 'Date de fin',
                 'widget' => 'single_text',
-            ])
-            ->add('submit', SubmitType::class, [
-                'label' => 'Générer la liste',
             ]);
     }
 

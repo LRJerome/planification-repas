@@ -19,10 +19,19 @@ class IngredientRepository extends ServiceEntityRepository
     public function findAllOrderedByName()
     {
         return $this->createQueryBuilder('i')
-            ->orderBy('LOWER(i.nom)', 'ASC')
+            ->orderBy('i.nom', 'ASC')
             ->getQuery()
-            ->getResult()
+            ->getResult();
         ;
+    }
+
+    public function findAllWithUnits(): array
+    {
+        return $this->createQueryBuilder('i')
+            ->select('i.id', 'i.nom', 'i.unite')
+            ->orderBy('i.nom', 'ASC')
+            ->getQuery()
+            ->getResult();
     }
 
 //    /**

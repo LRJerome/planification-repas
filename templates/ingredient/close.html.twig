@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Ingrédient créé</title>
+    <script>
+        // Récupérer les données de l'ingrédient créé
+        const newIngredient = {
+            id: {{ ingredient.id }},
+            nom: "{{ ingredient.nom }}",
+            unite: "{{ ingredient.unite }}"
+        };
+        
+        // Mettre à jour uniquement le dernier select ajouté
+        const selects = window.parent.document.querySelectorAll('.ingredient-select');
+        const lastSelect = selects[selects.length - 1];
+        
+        if (lastSelect) {
+            const newOption = new Option(newIngredient.nom, newIngredient.id, true, true);
+            newOption.dataset.unite = newIngredient.unite;
+            
+            // Ajouter l'option à tous les selects mais ne la sélectionner que dans le dernier
+            selects.forEach(select => {
+                const option = new Option(newIngredient.nom, newIngredient.id, false, false);
+                option.dataset.unite = newIngredient.unite;
+                select.add(option);
+            });
+            
+            // Sélectionner l'option uniquement dans le dernier select
+            lastSelect.value = newIngredient.id;
+            lastSelect.dispatchEvent(new Event('change'));
+        }
+        
+        // Fermer le modal et recharger son contenu
+        const modal = window.parent.document.querySelector('#nouvelIngredientModal');
+        const bsModal = window.parent.bootstrap.Modal.getInstance(modal);
+        if (bsModal) {
+            bsModal.hide();
+            // Réinitialiser l'iframe après la fermeture du modal
+            modal.addEventListener('hidden.bs.modal', function () {
+                const iframe = modal.querySelector('iframe');
+                iframe.src = iframe.src;
+            }, { once: true });
+        }
+    </script>
+</head>
+<body>
+    <div class="alert alert-success">
+        Ingrédient créé avec succès !
+    </div>
+</body>
+</html> 

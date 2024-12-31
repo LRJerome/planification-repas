@@ -1,0 +1,27 @@
+<div class="modal fade" id="nouvelIngredientModal" tabindex="-1" aria-labelledby="nouvelIngredientModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="nouvelIngredientModalLabel">Ajouter un nouvel ingrédient</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                {{ form_start(nouvelIngredientForm, {'attr': {'id': 'nouvelIngredientForm', 'data-is-ajax': true}}) }}
+                    <div class="mb-3">
+                        {{ form_row(nouvelIngredientForm.nom) }}
+                    </div>
+                    <div class="mb-3">
+                        {{ form_row(nouvelIngredientForm.unite) }}
+                    </div>
+                    <div class="mb-3">
+                        {{ form_row(nouvelIngredientForm.quantiteDefaut) }}
+                    </div>
+                    <div class="text-end">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                        <button type="submit" class="btn btn-primary">Ajouter</button>
+                    </div>
+                {{ form_end(nouvelIngredientForm) }}
+            </div>
+        </div>
+    </div>
+</div> 

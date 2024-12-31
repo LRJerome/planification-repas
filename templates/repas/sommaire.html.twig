@@ -1,114 +1,120 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Sommaire des Recettes{% endblock %}
+{% block title %}Sommaire des Recettes
+{% endblock %}
 
 {% block body %}
-<div class="container mt-4">
-    <h1 class="text-center mb-4">Sommaire des Recettes</h1>
+	<div class="container mt-4">
+		<div class="border border-primary rounded-3 p-4 shadow mb-5">
+			<div class="d-flex justify-content-between align-items-center mb-4">
 
-    {# Filtres par catégorie #}
-    <div class="mb-4">
-        <div class="btn-group w-100" role="group">
-            <button type="button" class="btn btn-outline-primary filter-btn active" data-filter="all">
-                Toutes les recettes
-            </button>
-            <button type="button" class="btn btn-outline-primary filter-btn" data-filter="low_carb">
-                Low Carb
-            </button>
-            <button type="button" class="btn btn-outline-primary filter-btn" data-filter="post_training">
-                Post Training
-            </button>
-            <button type="button" class="btn btn-outline-primary filter-btn" data-filter="en_cas">
-                En-cas
-            </button>
-            <button type="button" class="btn btn-outline-primary filter-btn" data-filter="autre">
-                Autre
-            </button>
-        </div>
-    </div>
-    
+                <h1>Liste des recettes en lignes</h1>
+                <a href="{{ path('app_repas_new') }}" class="btn btn-primary">
+                    <i class="fas fa-plus me-2"></i>Nouvelle recette
+                </a>
+            </div>
 
-    <div class="table-responsive">
-        <table class="table table-hover">
-            <thead>
-                <tr>
-                    <th>Nom de la recette</th>
-                    <th class="text-center" style="width: 150px">Type</th>
-                    <th class="text-center" style="width: 100px">Action</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for categorie, repas in repas_par_categorie %}
-                    {% for item in repas %}
-                        <tr class="recipe-row" data-category="{{ categorie }}">
-                            <td>{{ item.nom }}</td>
-                            <td class="text-center">
-                                <span class="badge bg-{{ categorie == 'low_carb' ? 'success' : 
-                                               categorie == 'post_training' ? 'primary' : 
-                                               categorie == 'en_cas' ? 'warning' : 
-                                               'secondary' }}">
-                                    {{ categorie|replace({'_': ' '})|capitalize }}
-                                </span>
-                            </td>
-                            <td class="text-center">
-                                <a href="{{ path('repas_show', {'id': item.id}) }}" 
-                                   class="btn btn-sm btn-outline-primary">
-                                    <i class="fas fa-eye me-1"></i>Voir
-                                </a>
-                            </td>
-                        </tr>
-                    {% endfor %}
-                {% endfor %}
-            </tbody>
-        </table>
-    </div>
-</div>
+			{# Filtres par catégorie #}
+			<div class="mb-4">
+				<div class="btn-group w-100" role="group">
+					<button type="button" class="btn btn-outline-primary filter-btn active" data-filter="all">
+						Toutes les recettes ({{ compteur_par_categorie['low-carb'] + compteur_par_categorie['post-training'] + compteur_par_categorie['en-cas'] + compteur_par_categorie['petit-dejeuner'] }})
+					</button>
+					<button type="button" class="btn btn-outline-primary filter-btn" data-filter="low-carb">
+						Low Carb ({{ compteur_par_categorie['low-carb'] }})
+					</button>
+					<button type="button" class="btn btn-outline-primary filter-btn" data-filter="post-training">
+						Post Training ({{ compteur_par_categorie['post-training'] }})
+					</button>
+					<button type="button" class="btn btn-outline-primary filter-btn" data-filter="en-cas">
+						En-cas ({{ compteur_par_categorie['en-cas'] }})
+					</button>
+					<button type="button" class="btn btn-outline-primary filter-btn" data-filter="petit-dejeuner">
+						Petit Déjeuner ({{ compteur_par_categorie['petit-dejeuner'] }})
+					</button>
+				</div>
+			</div>
+		</div>
+
+
+		<div class="table-responsive" style="max-height: 70vh; overflow-y: auto;">
+			<table class=" table-fixed table table-hover border">
+				<thead class="">
+					<tr>
+						<th  class="text-center text-primary bg-light">Nom de la recette</th>
+						<th class="text-center text-primary bg-light" style="width: 150px">Type</th>
+						<th class="text-center text-primary bg-light" style="width: 100px">Action</th>
+					</tr>
+				</thead>
+				<tbody>
+					{% for categorie, repas in repas_par_categorie %}
+						{% for item in repas %}
+							<tr class="recipe-row" data-category="{{ categorie }}">
+								<td>{{ item.nom }}</td>
+								<td class="text-center">
+									<span class="badge bg-{{ categorie == 'low-carb' ? 'success' : categorie == 'post-training' ? 'primary' : categorie == 'en-cas' ? 'warning' : 'info' }}">
+										{{ categorie|replace({'_': ' '})|capitalize }}
+									</span>
+								</td>
+								<td class="text-center">
+									<a href="{{ path('repas_show', {'id': item.id}) }}" class="btn btn-sm btn-outline-primary">
+										<i class="fas fa-eye me-1"></i>Voir
+									</a>
+								</td>
+							</tr>
+						{% endfor %}
+					{% endfor %}
+				</tbody>
+			</table>
+		</div>
+	</div>
 {% endblock %}
 
 {% block javascripts %}
-    {{ parent() }}
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            const filterButtons = document.querySelectorAll('.filter-btn');
-            const recipeRows = document.querySelectorAll('.recipe-row');
+	{{ parent() }}
+	<script>
+		document.addEventListener('DOMContentLoaded', function() {
+			// Gestion des filtres
+			const filterButtons = document.querySelectorAll('.filter-btn');
+			filterButtons.forEach(button => {
+				button.addEventListener('click', function() {
+					const filter = this.getAttribute('data-filter');
+					// console.log('Filtre sélectionné:', filter);
+					const rows = document.querySelectorAll('.recipe-row');
 
-            filterButtons.forEach(button => {
-                button.addEventListener('click', function() {
-                    // Retirer la classe active de tous les boutons
-                    filterButtons.forEach(btn => btn.classList.remove('active'));
-                    // Ajouter la classe active au bouton cliqué
-                    this.classList.add('active');
+					rows.forEach(row => {
+						// console.log('Catégorie de la ligne:', row.getAttribute('data-category'));
+						if (filter === 'all' || row.getAttribute('data-category') === filter) {
+							row.style.display = ''; // Affiche la ligne
+						} else {
+							row.style.display = 'none'; // Cache la ligne
+						}
+					});
 
-                    const filter = this.dataset.filter;
-
-                    recipeRows.forEach(row => {
-                        if (filter === 'all' || row.dataset.category === filter) {
-                            row.style.display = '';
-                        } else {
-                            row.style.display = 'none';
-                        }
-                    });
-                });
-            });
-        });
-    </script>
+					// Met à jour l'état actif du bouton
+					filterButtons.forEach(btn => btn.classList.remove('active'));
+					this.classList.add('active');
+				});
+			});
+		});
+	</script>
 {% endblock %}
 
 {% block stylesheets %}
-    {{ parent() }}
-    {% include 'styles/_meal_types.html.twig' %}
-    <style>
-        .btn-group {
-            margin-bottom: 1rem;
-        }
-        
-        .table td {
-            vertical-align: middle;
-        }
+	{{ parent() }}
+	{% include 'styles/_meal_types.html.twig' %}
+	<style>
+		.btn-group {
+			margin-bottom: 1rem;
+		}
 
-        .badge {
-            font-weight: normal;
-            padding: 0.4em 0.8em;
-        }
-    </style>
-{% endblock %} 
+		.table td {
+			vertical-align: middle;
+		}
+
+		.badge {
+			font-weight: normal;
+			padding: 0.4em 0.8em;
+		}
+	</style>
+{% endblock %}

@@ -18,6 +18,11 @@ class HomeController extends AbstractController
         // Organiser les plannings par date
         $planningsByDate = [];
         foreach ($plannings as $planning) {
+            // Vérifier si la date existe
+            if ($planning->getDate() === null) {
+                continue; // Passer au planning suivant si pas de date
+            }
+            
             $dateKey = $planning->getDate()->format('Y-m-d');
             if (!isset($planningsByDate[$dateKey])) {
                 $planningsByDate[$dateKey] = [

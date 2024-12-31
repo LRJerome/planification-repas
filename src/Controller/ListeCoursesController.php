@@ -16,9 +16,18 @@ use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Form\Extension\Core\Type\SubmitType;
 use Symfony\Component\HttpFoundation\Session\SessionInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use App\Form\NouvelIngredientType;
+use Symfony\Component\HttpFoundation\JsonResponse;
 
 class ListeCoursesController extends AbstractController
 {
+    private $logger;
+
+    public function __construct(LoggerInterface $logger)
+    {
+        $this->logger = $logger;
+    }
+
     #[Route('/liste/courses', name: 'liste_courses_index')]
     public function index(Request $request, SessionInterface $session, PlanningRepository $planningRepository, IngredientRepository $ingredientRepository): Response
     {
@@ -85,6 +94,9 @@ class ListeCoursesController extends AbstractController
         $form = $this->createForm(ListeCoursesType::class, ['ingredients' => $ingredients]);
         $form->handleRequest($request);
 
+        $nouvelIngredient = new Ingredient();
+        $nouvelIngredientForm = $this->createForm(NouvelIngredientType::class, $nouvelIngredient);
+
         if ($form->isSubmitted() && $form->isValid()) {
             $data = $form->getData();
             $newListeCourses = [];
@@ -107,8 +119,38 @@ class ListeCoursesController extends AbstractController
 
         return $this->render('liste_courses/modifier.html.twig', [
             'form' => $form->createView(),
+            'nouvelIngredientForm' => $nouvelIngredientForm->createView(),
             'debug_liste_courses' => $listeCourses,
         ]);
+    }
+
+    #[Route('/liste-courses/ajouter-ingredient', name: 'liste_courses_ajouter_ingredient', methods: ['POST'])]
+    public function ajouterIngredient(Request $request, EntityManagerInterface $entityManager): JsonResponse
+    {
+        $nouvelIngredient = new Ingredient();
+        $form = $this->createForm(NouvelIngredientType::class, $nouvelIngredient);
+        
+        $data = json_decode($request->getContent(), true);
+        $form->submit($data);
+
+        if ($form->isValid()) {
+            $entityManager->persist($nouvelIngredient);
+            $entityManager->flush();
+
+            return $this->json([
+                'success' => true,
+                'ingredient' => [
+                    'id' => $nouvelIngredient->getId(),
+                    'nom' => $nouvelIngredient->getNom(),
+                    'unite' => $nouvelIngredient->getUnite()
+                ]
+            ]);
+        }
+
+        return $this->json([
+            'success' => false,
+            'errors' => $this->getFormErrors($form)
+        ], 400);
     }
 
     private function calculerListeCourses($planning, $ingredientRepository)
@@ -123,15 +165,39 @@ class ListeCoursesController extends AbstractController
                     continue;
                 }
 
-                $nombrePersonnes = $this->getNombrePersonnesParType($jour, $typeRepas) ?: 1;
+                $nombrePersonnes = $this->getNombrePersonnesParType($jour, $typeRepas);
+                
+                // Log des informations du repas
+                $this->logger->debug('Traitement repas', [
+                    'date' => $jour->getDate()->format('Y-m-d'),
+                    'type_repas' => $typeRepas,
+                    'repas' => $repas->getNom(),
+                    'nombre_personnes' => $nombrePersonnes
+                ]);
+                
+                // Si le nombre de personnes est 0 ou null, on saute ce repas
+                if ($nombrePersonnes === 0 || $nombrePersonnes === null) {
+                    $this->logger->debug('Repas ignoré car nombre de personnes = 0');
+                    continue;
+                }
 
-                foreach ($repas->getIngredients() as $ingredient) {
-                    $quantiteDefaut = $ingredient->getQuantiteDefaut();
-                    if ($quantiteDefaut === null) {
+                foreach ($repas->getIngredientQuantites() as $ingredientQuantite) {
+                    $ingredient = $ingredientQuantite->getIngredient();
+                    $quantiteBase = $ingredientQuantite->getQuantite();
+                    
+                    // Log des calculs
+                    $this->logger->debug('Calcul ingrédient', [
+                        'ingredient' => $ingredient->getNom(),
+                        'quantite_base' => $quantiteBase,
+                        'nombre_personnes' => $nombrePersonnes,
+                        'calcul' => $quantiteBase * $nombrePersonnes
+                    ]);
+
+                    if ($quantiteBase === null) {
                         continue;
                     }
 
-                    $quantiteNecessaire = floatval($quantiteDefaut) * $nombrePersonnes;
+                    $quantiteNecessaire = floatval($quantiteBase) * $nombrePersonnes;
                     $nomIngredient = $ingredient->getNom();
 
                     if (!isset($listeCourses[$nomIngredient])) {
@@ -145,7 +211,9 @@ class ListeCoursesController extends AbstractController
             }
         }
 
-        // Arrondir les quantités à l'entier supérieur
+        // Log du résultat final
+        $this->logger->debug('Liste courses finale', $listeCourses);
+
         foreach ($listeCourses as &$item) {
             $item['quantite'] = ceil($item['quantite']);
         }
@@ -173,19 +241,26 @@ class ListeCoursesController extends AbstractController
 
     private function getNombrePersonnesParType($jour, $typeRepas)
     {
-        switch ($typeRepas) {
-            case 'petitDejeuner':
-                return $jour->getNombrePersonnesPetitDejeuner() ?: 1;
-            case 'encasMatin':
-                return $jour->getNombrePersonnesEncasMatin() ?: 1;
-            case 'dejeuner':
-                return $jour->getNombrePersonnesDejeuner() ?: 1;
-            case 'encasApresMidi':
-                return $jour->getNombrePersonnesEncasApresMidi() ?: 1;
-            case 'diner':
-                return $jour->getNombrePersonnesDiner() ?: 1;
-            default:
-                return 1;
+        // Log pour vérifier la valeur retournée
+        $nombre = match ($typeRepas) {
+            'petitDejeuner' => $jour->getNombrePersonnesPetitDejeuner(),
+            'encasMatin' => $jour->getNombrePersonnesEncasMatin(),
+            'dejeuner' => $jour->getNombrePersonnesDejeuner(),
+            'encasApresMidi' => $jour->getNombrePersonnesEncasApresMidi(),
+            'diner' => $jour->getNombrePersonnesDiner(),
+            default => 0
+        };
+        
+        $this->logger->debug("Nombre de personnes pour {$typeRepas}", ['nombre' => $nombre]);
+        return $nombre;
+    }
+
+    private function getFormErrors($form): array
+    {
+        $errors = [];
+        foreach ($form->getErrors(true) as $error) {
+            $errors[] = $error->getMessage();
         }
+        return $errors;
     }
 }

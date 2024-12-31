@@ -8,20 +8,23 @@ use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use Doctrine\DBAL\Types\Types;
 use Symfony\Component\Validator\Constraints as Assert;
+use Symfony\Component\HttpFoundation\File\File;
+use Vich\UploaderBundle\Mapping\Annotation as Vich;
 
 #[ORM\Entity(repositoryClass: RepasRepository::class)]
+#[Vich\Uploadable]
 class Repas
 {
-    public const CATEGORIE_LOW_CARB = 'low_carb';
-    public const CATEGORIE_POST_TRAINING = 'post_training';
-    public const CATEGORIE_EN_CAS = 'en_cas';
-    public const CATEGORIE_AUTRE = 'autre';
+    public const CATEGORIE_LOW_CARB = 'low-carb';
+    public const CATEGORIE_POST_TRAINING = 'post-training';
+    public const CATEGORIE_EN_CAS = 'en-cas';
+    public const CATEGORIE_PETIT_DEJEUNER = 'petit-dejeuner';
 
     public const CATEGORIES = [
-        self::CATEGORIE_LOW_CARB => 'Low-carb',
-        self::CATEGORIE_POST_TRAINING => 'Post-training',
-        self::CATEGORIE_EN_CAS => 'En-cas',
-        self::CATEGORIE_AUTRE => 'Autre'
+        'low-carb' => 'Low-carb',
+        'post-training' => 'Post-training',
+        'en-cas' => 'En-cas',
+        'petit-dejeuner' => 'Petit déjeuner',
     ];
 
     #[ORM\Id]
@@ -57,6 +60,15 @@ class Repas
     #[Assert\Count(min: 1, minMessage: "Vous devez ajouter au moins un ingrédient")]
     private Collection $ingredientQuantites;
 
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?string $imageName = null;
+
+    #[Vich\UploadableField(mapping: 'repas_images', fileNameProperty: 'imageName')]
+    private ?File $imageFile = null;
+
+    #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: true)]
+    private ?\DateTimeInterface $updatedAt = null;
+
     public function __construct()
     {
         $this->ingredients = new ArrayCollection();
@@ -86,6 +98,7 @@ class Repas
 
     public function setCategorie(string $categorie): self
     {
+        $categorie = strtolower(str_replace([' ', 'é'], ['-', 'e'], $categorie));
         $this->categorie = $categorie;
         return $this;
     }
@@ -153,7 +166,7 @@ class Repas
         return $this;
     }
 
-    public function getIngredientQuantites()
+    public function getIngredientQuantites(): Collection
     {
         return $this->ingredientQuantites;
     }
@@ -161,22 +174,47 @@ class Repas
     public function addIngredientQuantite(IngredientQuantite $ingredientQuantite): self
     {
         if (!$this->ingredientQuantites->contains($ingredientQuantite)) {
-            $this->ingredientQuantites[] = $ingredientQuantite;
+            $this->ingredientQuantites->add($ingredientQuantite);
             $ingredientQuantite->setRepas($this);
         }
-
         return $this;
     }
 
     public function removeIngredientQuantite(IngredientQuantite $ingredientQuantite): self
     {
         if ($this->ingredientQuantites->removeElement($ingredientQuantite)) {
-            // set the owning side to null (unless already changed)
             if ($ingredientQuantite->getRepas() === $this) {
                 $ingredientQuantite->setRepas(null);
             }
         }
-
         return $this;
+    }
+
+    public function setImageFile(?File $imageFile = null): void
+    {
+        $this->imageFile = $imageFile;
+
+        if (null !== $imageFile) {
+            $this->updatedAt = new \DateTimeImmutable();
+        }
+
+        if (null === $imageFile && $this->imageName) {
+            $this->imageName = null;
+        }
+    }
+
+    public function getImageFile(): ?File
+    {
+        return $this->imageFile;
+    }
+
+    public function setImageName(?string $imageName): void
+    {
+        $this->imageName = $imageName;
+    }
+
+    public function getImageName(): ?string
+    {
+        return $this->imageName;
     }
 }

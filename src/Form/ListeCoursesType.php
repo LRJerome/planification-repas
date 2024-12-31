@@ -14,14 +14,15 @@ class ListeCoursesType extends AbstractType
     {
         $builder
             ->add('ingredients', CollectionType::class, [
-                'entry_type' => IngredientQuantiteType::class,
+                'entry_type' => ListeCoursesIngredientType::class,
                 'allow_add' => true,
                 'allow_delete' => true,
                 'by_reference' => false,
                 'prototype' => true,
-                'attr' => ['class' => 'ingredients-collection'],
             ])
-            ->add('save', SubmitType::class, ['label' => 'Enregistrer les modifications']);
+            ->add('save', SubmitType::class, [
+                'label' => 'Enregistrer les modifications'
+            ]);
     }
 
     public function configureOptions(OptionsResolver $resolver)

@@ -2,155 +2,128 @@
 
 {% block title %}Nouveau Planning{% endblock %}
 
+{% block body %}
+    <div class="container mt-4">
+        <div class="row justify-content-center">
+            <div class="col-md-8">
+                <div class="card shadow">
+                    <div class="card-header bg-primary text-white">
+                        <h1 class="h3 mb-0">
+                            <i class="fas fa-calendar-plus me-2"></i>
+                            Créer un nouveau planning
+                        </h1>
+                    </div>
+                    <div class="card-body">
+                        {{ form_start(form, {'attr': {'data-add-to-planning': 'true', 'class': 'needs-validation', 'novalidate': 'novalidate'}}) }}
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    {{ form_label(form.date, 'Date', {'label_attr': {'class': 'form-label'}}) }}
+                                    {{ form_widget(form.date, {
+                                        'attr': {
+                                            'class': 'form-control',
+                                            'min': "now"|date('Y-m-d')
+                                        }
+                                    }) }}
+                                    {{ form_errors(form.date) }}
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    {{ form_label(form.petitDejeuner, 'Petit Déjeuner', {'label_attr': {'class': 'form-label'}}) }}
+                                    {{ form_widget(form.petitDejeuner, {'attr': {'class': 'form-select'}}) }}
+                                    {{ form_errors(form.petitDejeuner) }}
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    {{ form_label(form.nombrePersonnesPetitDejeuner, 'Nombre de personnes', {'label_attr': {'class': 'form-label'}}) }}
+                                    {{ form_widget(form.nombrePersonnesPetitDejeuner, {'attr': {'class': 'form-control', 'min': '1'}}) }}
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    {{ form_label(form.encasMatin, 'En-cas Matin', {'label_attr': {'class': 'form-label'}}) }}
+                                    {{ form_widget(form.encasMatin, {'attr': {'class': 'form-select'}}) }}
+                                    {{ form_errors(form.encasMatin) }}
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    {{ form_label(form.nombrePersonnesEncasMatin, 'Nombre de personnes', {'label_attr': {'class': 'form-label'}}) }}
+                                    {{ form_widget(form.nombrePersonnesEncasMatin, {'attr': {'class': 'form-control', 'min': '1'}}) }}
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    {{ form_label(form.dejeuner, 'Déjeuner', {'label_attr': {'class': 'form-label'}}) }}
+                                    {{ form_widget(form.dejeuner, {'attr': {'class': 'form-select'}}) }}
+                                    {{ form_errors(form.dejeuner) }}
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    {{ form_label(form.nombrePersonnesDejeuner, 'Nombre de personnes', {'label_attr': {'class': 'form-label'}}) }}
+                                    {{ form_widget(form.nombrePersonnesDejeuner, {'attr': {'class': 'form-control', 'min': '1'}}) }}
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    {{ form_label(form.encasApresMidi, 'En-cas Après-midi', {'label_attr': {'class': 'form-label'}}) }}
+                                    {{ form_widget(form.encasApresMidi, {'attr': {'class': 'form-select'}}) }}
+                                    {{ form_errors(form.encasApresMidi) }}
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    {{ form_label(form.nombrePersonnesEncasApresMidi, 'Nombre de personnes', {'label_attr': {'class': 'form-label'}}) }}
+                                    {{ form_widget(form.nombrePersonnesEncasApresMidi, {'attr': {'class': 'form-control', 'min': '1'}}) }}
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    {{ form_label(form.diner, 'Dîner', {'label_attr': {'class': 'form-label'}}) }}
+                                    {{ form_widget(form.diner, {'attr': {'class': 'form-select'}}) }}
+                                    {{ form_errors(form.diner) }}
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    {{ form_label(form.nombrePersonnesDiner, 'Nombre de personnes', {'label_attr': {'class': 'form-label'}}) }}
+                                    {{ form_widget(form.nombrePersonnesDiner, {'attr': {'class': 'form-control', 'min': '1'}}) }}
+                                </div>
+                            </div>
+
+                            <div class="d-flex justify-content-between mt-4">
+                                <a href="{{ path('planning_index') }}" class="btn btn-secondary">
+                                    <i class="fas fa-arrow-left me-2"></i>Retour
+                                </a>
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="fas fa-save me-2"></i>Enregistrer
+                                </button>
+                            </div>
+                        {{ form_end(form) }}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
 {% block stylesheets %}
     {{ parent() }}
     <style>
-        .planning-form {
-            background: white;
-            border-radius: 8px;
-            padding: 2rem;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        .card {
+            border: none;
+            border-radius: 15px;
         }
-        .meal-section {
-            background: #f8f9fa;
+        .card-header {
+            border-radius: 15px 15px 0 0 !important;
             padding: 1.5rem;
-            margin-bottom: 1.5rem;
+        }
+        .form-label {
+            font-weight: 500;
+        }
+        .form-control, .form-select {
             border-radius: 8px;
         }
-        .persons-input {
-            max-width: 150px;
-        }
-        .meal-type {
-            display: inline-block;
-            padding: 4px 8px;
-            border-radius: 4px;
-            margin-left: 8px;
-            font-size: 0.875rem;
-            font-weight: bold;
-        }
-        .meal-type.low_carb {
-            background-color: #d4edda;
-            color: #155724;
-        }
-        .meal-type.post_training {
-            background-color: #cce5ff;
-            color: #004085;
-        }
-        .meal-type.en_cas {
-            background-color: #fff3cd;
-            color: #856404;
-        }
-        .meal-type.autre {
-            background-color: #f8f9fa;
-            color: #383d41;
+        .btn {
+            border-radius: 8px;
+            padding: 0.5rem 1.5rem;
         }
     </style>
-{% endblock %}
-
-{% block body %}
-<div class="container mt-4">
-    <div class="planning-form">
-        <h1 class="h3 mb-4">Nouveau Planning</h1>
-
-        {{ form_start(form) }}
-            <div class="mb-4">
-                {{ form_row(form.date, {
-                    'label': 'Date du planning',
-                    'attr': {
-                        'class': 'form-control'
-                    }
-                }) }}
-            </div>
-
-            {% set mealTypes = {
-                'petitDejeuner': {'label': 'Petit Déjeuner', 'field': 'nombrePersonnesPetitDejeuner'},
-                'encasMatin': {'label': 'En-cas Matin', 'field': 'nombrePersonnesEncasMatin'},
-                'dejeuner': {'label': 'Déjeuner', 'field': 'nombrePersonnesDejeuner'},
-                'encasApresMidi': {'label': 'En-cas Après-midi', 'field': 'nombrePersonnesEncasApresMidi'},
-                'diner': {'label': 'Dîner', 'field': 'nombrePersonnesDiner'}
-            } %}
-
-            {% for type, config in mealTypes %}
-                <div class="meal-section">
-                    <h3 class="h5 mb-3">{{ config.label }}</h3>
-                    <div class="row">
-                        <div class="col-md-6">
-                            {{ form_row(form[type], {
-                                'label': 'Recette',
-                                'attr': {
-                                    'class': 'form-control meal-select',
-                                    'data-meal-type': type
-                                }
-                            }) }}
-                        </div>
-                        <div class="col-md-4">
-                            {{ form_row(form[config.field], {
-                                'label': 'Nombre de personnes',
-                                'attr': {
-                                    'class': 'form-control persons-input',
-                                    'min': 1
-                                }
-                            }) }}
-                        </div>
-                        <div class="col-md-2">
-                            <span class="meal-type" id="mealType_{{ type }}"></span>
-                        </div>
-                    </div>
-                </div>
-            {% endfor %}
-
-            <div class="text-center">
-                <button class="btn btn-primary">{{ button_label|default('Enregistrer') }}</button>
-            </div>
-        {{ form_end(form) }}
-    </div>
-</div>
-{% endblock %}
-
-{% block javascripts %}
-    {{ parent() }}
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            const mealSelects = document.querySelectorAll('.meal-select');
-            
-            function updateMealType(select) {
-                const selectedOption = select.options[select.selectedIndex];
-                const mealType = selectedOption.getAttribute('data-category');
-                const typeSpan = document.getElementById('mealType_' + select.getAttribute('data-meal-type'));
-                
-                if (mealType) {
-                    let displayText = '';
-                    switch(mealType) {
-                        case 'low_carb':
-                            displayText = 'Low-carb';
-                            break;
-                        case 'post_training':
-                            displayText = 'Post-training';
-                            break;
-                        case 'en_cas':
-                            displayText = 'En-cas';
-                            break;
-                        case 'autre':
-                            displayText = 'Autre';
-                            break;
-                    }
-                    typeSpan.textContent = displayText;
-                    typeSpan.className = 'meal-type ' + mealType;
-                } else {
-                    typeSpan.textContent = '';
-                    typeSpan.className = 'meal-type';
-                }
-            }
-            
-            mealSelects.forEach(select => {
-                // Mise à jour initiale
-                updateMealType(select);
-                
-                // Mise à jour lors du changement
-                select.addEventListener('change', function() {
-                    updateMealType(this);
-                });
-            });
-        });
-    </script>
 {% endblock %}

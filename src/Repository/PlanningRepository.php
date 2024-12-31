@@ -120,8 +120,12 @@ class PlanningRepository extends ServiceEntityRepository
             ->leftJoin('p.encasApresMidi', 'ea')
             ->leftJoin('p.diner', 'di')
             ->addSelect('pd', 'em', 'd', 'ea', 'di')
-            ->andWhere('p.date = :date')
-            ->setParameter('date', $date->format('Y-m-d'))
+            ->where('p.date >= :start')
+            ->andWhere('p.date <= :end')
+            ->setParameter('start', $startOfDay)
+            ->setParameter('end', $endOfDay)
+            ->orderBy('p.id', 'ASC')
+            ->setMaxResults(1)
             ->getQuery()
             ->getOneOrNullResult();
     }
@@ -146,6 +150,30 @@ class PlanningRepository extends ServiceEntityRepository
             ->setParameter('start', $startOfDay)
             ->setParameter('end', $endOfDay)
             ->orderBy('p.date', 'ASC')
+            ->getQuery()
+            ->getResult();
+    }
+
+    public function findByDateWithMeals(\DateTime $date): array
+    {
+        $startOfDay = clone $date;
+        $startOfDay->setTime(0, 0, 0);
+        
+        $endOfDay = clone $date;
+        $endOfDay->setTime(23, 59, 59);
+
+        return $this->createQueryBuilder('p')
+            ->leftJoin('p.petitDejeuner', 'pd')
+            ->leftJoin('p.encasMatin', 'em')
+            ->leftJoin('p.dejeuner', 'd')
+            ->leftJoin('p.encasApresMidi', 'ea')
+            ->leftJoin('p.diner', 'di')
+            ->addSelect('pd', 'em', 'd', 'ea', 'di')
+            ->where('p.date >= :start')
+            ->andWhere('p.date <= :end')
+            ->setParameter('start', $startOfDay)
+            ->setParameter('end', $endOfDay)
+            ->orderBy('p.id', 'ASC')
             ->getQuery()
             ->getResult();
     }

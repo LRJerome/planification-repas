@@ -2,56 +2,306 @@
 
 {% block title %}Modifier la Liste de Courses{% endblock %}
 
+{% block stylesheets %}
+    {{ parent() }}
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+    <style>
+        .ingredient-item {
+            background-color: #ffffff;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            transition: all 0.3s ease;
+            border: 1px solid #e9ecef;
+        }
+        
+        .ingredient-item:hover {
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            transform: translateY(-2px);
+        }
+
+        .remove-ingredient {
+            height: 38px;
+            width: 38px;
+            padding: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-top: 32px;
+        }
+
+        .btn-add-ingredient {
+            margin: 20px 0;
+            width: 100%;
+            padding: 15px;
+            background-color: #f8f9fa;
+            border: 2px dashed #dee2e6;
+            color: #6c757d;
+            transition: all 0.3s ease;
+            border-radius: 10px;
+        }
+
+        .btn-add-ingredient:hover {
+            background-color: #e9ecef;
+            border-color: #6c757d;
+            color: #495057;
+        }
+
+        .select2-container--default .select2-selection--single {
+            height: 38px;
+            border: 1px solid #ced4da;
+            border-radius: 0.25rem;
+        }
+
+        .select2-container--default .select2-selection--single .select2-selection__rendered {
+            line-height: 38px;
+        }
+
+        .select2-container--default .select2-selection--single .select2-selection__arrow {
+            height: 36px;
+        }
+
+        .unite-display {
+            margin-top: 32px;
+            padding: 8px;
+            background-color: #f8f9fa;
+            border-radius: 4px;
+            text-align: center;
+            font-weight: 500;
+        }
+
+        .quantity-wrapper {
+            display: flex;
+            align-items: center;
+        }
+
+        .quantity-input {
+            text-align: center;
+        }
+    </style>
+{% endblock %}
+
 {% block body %}
     <div class="container mt-5">
-        <h1 class="mb-4">Modifier la Liste de Courses</h1>
-
-        {{ form_start(form, {'attr': {'class': 'form-group'}}) }}
-
-<div class="mb-3">
-    {{ form_label(form.nom, 'Nom de l\'ingrédient', {'label_attr': {'class': 'form-label'}}) }}
-    {{ form_widget(form.nom, {'attr': {'class': 'form-control'}}) }}
-</div>
-
-<div class="mb-3">
-    {{ form_label(form.quantiteDefaut, 'Quantité par défaut', {'label_attr': {'class': 'form-label'}}) }}
-    {{ form_widget(form.quantiteDefaut, {'attr': {'class': 'form-control'}}) }}
-</div>
-
-{{ form_end(form) }}
-    </div>
-
-    <!-- Modal pour créer un nouvel ingrédient -->
-    <div class="modal fade" id="createIngredientModal" tabindex="-1" aria-labelledby="createIngredientModalLabel" aria-hidden="true">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="createIngredientModalLabel">Créer un nouvel Ingrédient</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body">
-                    <div class="container mt-4">
-        <h1 class="text-center">Créer un nouvel Ingrédient</h1>
-        <div class="card p-4 shadow-sm">
-            {{ include('ingredient/_form.html.twig') }}
-            <a href="{{ path('app_ingredient_index') }}" class="btn btn-secondary mt-3">
-                <i class="fa-solid fa-arrow-left"></i> Retour à la liste
-            </a>
-        </div>
-    </div>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fermer</button>
-                    <button type="button" class="btn btn-primary" id="saveNewIngredient">Enregistrer</button>
-                </div>
+        <div class="row mb-4">
+            <div class="col">
+                <h1>Modifier la Liste de Courses</h1>
+            </div>
+            <div class="col text-end">
+                <a href="{{ path('liste_courses_index') }}" class="btn btn-outline-secondary">
+                    <i class="fas fa-arrow-left"></i> Retour à la liste
+                </a>
             </div>
         </div>
+
+        {{ form_start(form) }}
+        
+        <div class="ingredients-collection" 
+             data-prototype="{{ form_widget(form.ingredients.vars.prototype)|e('html_attr') }}">
+            {% for ingredientField in form.ingredients %}
+                <div class="ingredient-item">
+                    <div class="row align-items-center">
+                        <div class="col-md-5">
+                            {{ form_row(ingredientField.ingredient, {
+                                'attr': {'class': 'select2'},
+                                'label': 'Ingrédient'
+                            }) }}
+                        </div>
+                        <div class="col-md-3">
+                            {{ form_row(ingredientField.quantite, {
+                                'attr': {
+                                    'min': '0',
+                                    'step': '0.1',
+                                    'class': 'form-control quantity-input'
+                                },
+                                'label': 'Quantité'
+                            }) }}
+                        </div>
+                        <div class="col-md-2">
+                            <div class="unite-display" data-ingredient-id="{{ ingredientField.ingredient.vars.value }}">
+                                {% if ingredientField.ingredient.vars.choices is defined %}
+                                    {% for choice in ingredientField.ingredient.vars.choices %}
+                                        {% if choice.value == ingredientField.ingredient.vars.value %}
+                                            {{ choice.data.unite }}
+                                        {% endif %}
+                                    {% endfor %}
+                                {% else %}
+                                    -
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="col-md-2">
+                            <button type="button" class="btn btn-outline-danger remove-ingredient">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+
+        <button type="button" class="btn btn-add-ingredient" id="add-ingredient">
+            <i class="fas fa-plus me-2"></i> Ajouter un ingrédient
+        </button>
+
+        <div class="d-grid gap-2 mt-4">
+            {{ form_row(form.save, {
+                'attr': {
+                    'class': 'btn btn-primary btn-lg'
+                },
+                'label': 'Enregistrer les modifications'
+            }) }}
+        </div>
+        
+        {{ form_end(form) }}
     </div>
 
+    {% include 'modals/_ingredient_modal.html.twig' with {'nouvelIngredientForm': nouvelIngredientForm} %}
 {% endblock %}
+
 {% block javascripts %}
+    {{ parent() }}
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const addButton = document.getElementById('add-ingredient');
+            const collection = document.querySelector('.ingredients-collection');
+            let index = collection.children.length;
 
+            function updateUnite(select) {
+                const item = select.closest('.ingredient-item');
+                const uniteDisplay = item.querySelector('.unite-display');
+                const selectedOption = select.options[select.selectedIndex];
+                
+                if (selectedOption && selectedOption.dataset.unite) {
+                    uniteDisplay.textContent = selectedOption.dataset.unite;
+                } else {
+                    uniteDisplay.textContent = '-';
+                }
+            }
 
-{{ parent() }}
+            function addIngredientForm() {
+                const prototype = collection.dataset.prototype;
+                const newForm = prototype.replace(/__name__/g, index);
+                const itemDiv = document.createElement('div');
+                itemDiv.className = 'ingredient-item';
+                
+                const wrapper = document.createElement('div');
+                wrapper.className = 'row align-items-center';
+                wrapper.innerHTML = newForm;
+                
+                // Ajuster la structure HTML pour correspondre au design
+                const cols = wrapper.querySelectorAll('.form-group');
+                cols.forEach((col, i) => {
+                    const newCol = document.createElement('div');
+                    newCol.className = i === 0 ? 'col-md-5' : 'col-md-3';
+                    col.parentNode.insertBefore(newCol, col);
+                    newCol.appendChild(col);
+                });
 
+                // Ajouter la colonne pour l'unité
+                const uniteCol = document.createElement('div');
+                uniteCol.className = 'col-md-2';
+                uniteCol.innerHTML = '<div class="unite-display">-</div>';
+                wrapper.appendChild(uniteCol);
+
+                // Ajouter le bouton de suppression
+                const deleteCol = document.createElement('div');
+                deleteCol.className = 'col-md-2';
+                deleteCol.innerHTML = `
+                    <button type="button" class="btn btn-outline-danger remove-ingredient">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                `;
+                wrapper.appendChild(deleteCol);
+                
+                itemDiv.appendChild(wrapper);
+                collection.appendChild(itemDiv);
+                
+                // Initialiser Select2 sur le nouveau select
+                const newSelect = itemDiv.querySelector('select');
+                if (newSelect) {
+                    $(newSelect).select2({
+                        placeholder: 'Choisir un ingrédient',
+                        width: '100%',
+                        matcher: function(params, data) {
+                            if ($.trim(params.term) === '') {
+                                return data;
+                            }
+                            
+                            if (typeof data.text === 'undefined') {
+                                return null;
+                            }
+
+                            const searchTerm = params.term.toLowerCase();
+                            const textToSearch = data.text.toLowerCase();
+
+                            if (textToSearch.startsWith(searchTerm)) {
+                                return data;
+                            }
+
+                            return null;
+                        }
+                    }).on('change', function() {
+                        updateUnite(this);
+                    });
+                }
+                
+                index++;
+            }
+
+            // Initialiser Select2 sur les selects existants
+            $('.select2').select2({
+                placeholder: 'Choisir un ingrédient',
+                width: '100%',
+                matcher: function(params, data) {
+                    if ($.trim(params.term) === '') {
+                        return data;
+                    }
+                    
+                    if (typeof data.text === 'undefined') {
+                        return null;
+                    }
+
+                    const searchTerm = params.term.toLowerCase();
+                    const textToSearch = data.text.toLowerCase();
+
+                    if (textToSearch.startsWith(searchTerm)) {
+                        return data;
+                    }
+
+                    return null;
+                }
+            }).on('change', function() {
+                updateUnite(this);
+            });
+
+            // Gestionnaire pour le bouton d'ajout
+            addButton.addEventListener('click', addIngredientForm);
+
+            // Gestionnaire pour la suppression
+            collection.addEventListener('click', function(e) {
+                if (e.target.matches('.remove-ingredient') || e.target.closest('.remove-ingredient')) {
+                    e.preventDefault();
+                    const item = e.target.closest('.ingredient-item');
+                    
+                    item.style.opacity = '0';
+                    item.style.transform = 'translateX(20px)';
+                    setTimeout(() => {
+                        item.remove();
+                    }, 300);
+                }
+            });
+
+            // Gestion des quantités négatives
+            collection.addEventListener('input', function(e) {
+                if (e.target.matches('.quantity-input')) {
+                    if (e.target.value < 0) {
+                        e.target.value = 0;
+                    }
+                }
+            });
+        });
+    </script>
 {% endblock %}
