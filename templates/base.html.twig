@@ -39,50 +39,77 @@
 					background-color: #f8f9fa; /* Couleur de fond du footer */
 					padding: 1rem 0; /* Espacement vertical */
 				}
+
+				.logout-btn {
+					color: #6c757d;
+					transition: color 0.3s ease;
+					text-decoration: none;
+					font-size: 1rem;
+					padding: 0.5rem 1rem;
+					border-radius: 20px;
+					border: 1px solid transparent;
+				}
+
+				.logout-btn:hover {
+					color: #dc3545;
+					border-color: #dc3545;
+					background-color: rgba(220, 53, 69, 0.1);
+				}
 			</style>
 		{% endblock %}
 	</head>
 	<body>
 	
-		<nav class="navbar navbar-expand-lg sticky-top shadow" style="background-color: #f8f9fa; text-decoration: none;">
-			<div class="container">
-				<a  href="{{ path('home') }}" style="text-decoration: none; color: inherit;">
-					<i class="fas fa-utensils me-2"></i>Planning-repas
-				</a>
-				<button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
-					<span class="navbar-toggler-icon"></span>
-				</button>
-				<div class="collapse navbar-collapse justify-content-end" id="navbarNav">
-					<ul class="navbar-nav">
-						<li class="nav-item">
-							<a class="nav-link {{ app.request.get('_route') == 'index' ? 'active' : '' }}" href="{{ path('index') }}">
-								<i class="fas fa-list me-1"></i>Recettes
-							</a>
-						</li>
-						<li class="nav-item">
-							<a class="nav-link {{ app.request.get('_route') == 'repas_sommaire' ? 'active' : '' }}" href="{{ path('repas_sommaire') }}">
-								<i class="fas fa-book me-1"></i>Sommaire
-							</a>
-						</li>
-						<li class="nav-item">
-							<a class="nav-link {{ app.request.get('_route') == 'ingredient_index' ? 'active' : '' }}" href="{{ path('ingredient_index') }}">
-								<i class="fas fa-carrot me-1"></i>Ingrédients
-							</a>
-						</li>
-						<li class="nav-item">
-							<a class="nav-link {{ app.request.get('_route') == 'planning_index' ? 'active' : '' }}" href="{{ path('planning_index') }}">
-								<i class="fas fa-calendar-alt me-1"></i>Planning
-							</a>
-						</li>
-						<li class="nav-item">
-							<a class="nav-link {{ app.request.get('_route') == 'liste_courses_index' ? 'active' : '' }}" href="{{ path('liste_courses_index') }}">
-								<i class="fas fa-shopping-cart me-1"></i>Liste de courses
-							</a>
-						</li>
-					</ul>
-				</div>
-			</div>
-		</nav>
+<nav class="navbar navbar-expand-lg sticky-top shadow" style="background-color: #f8f9fa; text-decoration: none;">
+    <div class="container">
+        <a href="{{ path('home') }}" style="text-decoration: none; color: inherit;">
+            <i class="fas fa-utensils me-2"></i>Planning-repas
+        </a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse justify-content-end" id="navbarNav">
+            <ul class="navbar-nav">
+			<li class="nav-item">
+                    <a class="nav-link {{ app.request.get('_route') == 'planning_index' ? 'active' : '' }}" href="{{ path('planning_index') }}">
+                        <i class="fas fa-calendar-alt me-1"></i>Planning
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link {{ app.request.get('_route') == 'liste_courses_index' ? 'active' : '' }}" href="{{ path('liste_courses_index') }}">
+                        <i class="fas fa-shopping-cart me-1"></i>Liste de courses
+                    </a>
+                </li>
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                        <i class="fas fa-book me-1"></i>Recettes
+                    </a>
+                    <ul class="dropdown-menu" aria-labelledby="navbarDropdown">
+                        <li><a class="dropdown-item {{ app.request.get('_route') == 'index' ? 'active' : '' }}" href="{{ path('index') }}">
+                            <i class="fas fa-list me-1"></i>Visualisation
+                        </a></li>
+                        <li><a class="dropdown-item {{ app.request.get('_route') == 'repas_sommaire' ? 'active' : '' }}" href="{{ path('repas_sommaire') }}">
+                            <i class="fas fa-list-ol me-1"></i>En liste
+                        </a></li>
+                    </ul>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link {{ app.request.get('_route') == 'ingredient_index' ? 'active' : '' }}" href="{{ path('ingredient_index') }}">
+                        <i class="fas fa-carrot me-1"></i>Ingrédients
+                    </a>
+                </li>
+                
+                {% if app.user %}
+                    <li class="nav-item ms-3">
+                        <a href="{{ path('app_logout') }}" class="logout-btn">
+                            <i class="fas fa-sign-out-alt me-1"></i>
+                        </a>
+                    </li>
+                {% endif %}
+            </ul>
+        </div>
+    </div>
+</nav>
 
 		{# Ajout des messages flash #}
 		<div class="container mt-3">
