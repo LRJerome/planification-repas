@@ -14,6 +14,10 @@ class Planning
     #[ORM\Column]
     private ?int $id = null;
 
+    #[ORM\ManyToOne(targetEntity: User::class)]
+    #[ORM\JoinColumn(nullable: false)]
+    private ?User $user = null;
+
     #[ORM\Column(type: Types::DATE_MUTABLE, nullable: true)]
     private ?\DateTimeInterface $date = null;
 
@@ -248,6 +252,17 @@ class Planning
     {
         $this->nombrePersonnesDiner = $nombrePersonnesDiner;
 
+        return $this;
+    }
+
+    public function getUser(): ?User
+    {
+        return $this->user;
+    }
+
+    public function setUser(?User $user): self
+    {
+        $this->user = $user;
         return $this;
     }
 }

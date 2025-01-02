@@ -177,4 +177,64 @@ class PlanningRepository extends ServiceEntityRepository
             ->getQuery()
             ->getResult();
     }
+
+    public function findByDateAndUserWithMeals(\DateTimeInterface $date, $user): array
+    {
+        return $this->createQueryBuilder('p')
+            ->andWhere('p.date = :date')
+            ->andWhere('p.user = :user')
+            ->leftJoin('p.petitDejeuner', 'pd')
+            ->leftJoin('p.encasMatin', 'em')
+            ->leftJoin('p.dejeuner', 'd')
+            ->leftJoin('p.encasApresMidi', 'ea')
+            ->leftJoin('p.diner', 'di')
+            ->addSelect('pd', 'em', 'd', 'ea', 'di')
+            ->setParameter('date', $date)
+            ->setParameter('user', $user)
+            ->getQuery()
+            ->getResult();
+    }
+
+    public function findByDateRangeAndUser(DateTimeInterface $startDate, DateTimeInterface $endDate, $user): array
+    {
+        return $this->createQueryBuilder('p')
+            ->leftJoin('p.petitDejeuner', 'pd')
+            ->leftJoin('p.encasMatin', 'em')
+            ->leftJoin('p.dejeuner', 'd')
+            ->leftJoin('p.encasApresMidi', 'ea')
+            ->leftJoin('p.diner', 'di')
+            ->addSelect('pd', 'em', 'd', 'ea', 'di')
+            ->andWhere('p.date >= :start')
+            ->andWhere('p.date <= :end')
+            ->andWhere('p.user = :user')
+            ->setParameter('start', $startDate->format('Y-m-d'))
+            ->setParameter('end', $endDate->format('Y-m-d'))
+            ->setParameter('user', $user)
+            ->orderBy('p.date', 'ASC')
+            ->getQuery()
+            ->getResult();
+    }
+
+    public function findByWeekAndUser(DateTimeInterface $date, $user): array
+    {
+        $dateTime = $date instanceof DateTime ? $date : new DateTime($date->format('Y-m-d'));
+        $startOfWeek = (clone $dateTime)->modify('monday this week');
+        $endOfWeek = (clone $startOfWeek)->modify('+6 days');
+
+        return $this->createQueryBuilder('p')
+            ->leftJoin('p.petitDejeuner', 'pd')
+            ->leftJoin('p.encasMatin', 'em')
+            ->leftJoin('p.dejeuner', 'd')
+            ->leftJoin('p.encasApresMidi', 'ea')
+            ->leftJoin('p.diner', 'di')
+            ->addSelect('pd', 'em', 'd', 'ea', 'di')
+            ->andWhere('p.date BETWEEN :start AND :end')
+            ->andWhere('p.user = :user')
+            ->setParameter('start', $startOfWeek->format('Y-m-d'))
+            ->setParameter('end', $endOfWeek->format('Y-m-d'))
+            ->setParameter('user', $user)
+            ->orderBy('p.date', 'ASC')
+            ->getQuery()
+            ->getResult();
+    }
 }

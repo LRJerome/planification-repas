@@ -34,6 +34,11 @@ class PlanningController extends AbstractController
     #[Route('/', name: 'index', methods: ['GET'])]
     public function index(PlanningRepository $planningRepository): Response
     {
+        $user = $this->getUser();
+        if (!$user) {
+            return $this->redirectToRoute('app_login');
+        }
+
         $today = new \DateTime();
         $today->setTime(0, 0, 0);
         $endDate = (clone $today)->modify('+7 days')->setTime(23, 59, 59);
@@ -42,10 +47,10 @@ class PlanningController extends AbstractController
         $currentDate = clone $today;
         
         while ($currentDate <= $endDate) {
-            // Récupérer tous les plannings pour cette date
+            // Récupérer les plannings pour cette date et cet utilisateur
             $dateInfo = [
                 'date' => clone $currentDate,
-                'plannings' => $planningRepository->findByDateWithMeals($currentDate)
+                'plannings' => $planningRepository->findByDateAndUserWithMeals($currentDate, $user)
             ];
             
             $plannings[] = $dateInfo;
@@ -61,7 +66,13 @@ class PlanningController extends AbstractController
     #[Route('/new', name: 'new', methods: ['GET', 'POST'])]
     public function new(Request $request): Response
     {
+        $user = $this->getUser();
+        if (!$user) {
+            return $this->redirectToRoute('app_login');
+        }
+
         $planning = new Planning();
+        $planning->setUser($user);
         $form = $this->createForm(PlanningType::class, $planning);
         $form->handleRequest($request);
 
@@ -82,6 +93,11 @@ class PlanningController extends AbstractController
     #[Route('/{id}/edit', name: 'edit', methods: ['GET', 'POST'])]
     public function edit(Request $request, Planning $planning): Response
     {
+        // Vérifier que l'utilisateur est propriétaire du planning
+        if ($planning->getUser() !== $this->getUser()) {
+            throw $this->createAccessDeniedException('Vous n\'avez pas accès à ce planning.');
+        }
+
         $form = $this->createForm(PlanningType::class, $planning);
         $form->handleRequest($request);
 
@@ -101,6 +117,11 @@ class PlanningController extends AbstractController
     #[Route('/{id}', name: 'delete', methods: ['POST'])]
     public function delete(Request $request, Planning $planning): Response
     {
+        // Vérifier que l'utilisateur est propriétaire du planning
+        if ($planning->getUser() !== $this->getUser()) {
+            throw $this->createAccessDeniedException('Vous n\'avez pas accès à ce planning.');
+        }
+
         if ($this->isCsrfTokenValid('delete'.$planning->getId(), $request->request->get('_token'))) {
             $this->entityManager->remove($planning);
             $this->entityManager->flush();
@@ -118,6 +139,11 @@ class PlanningController extends AbstractController
         RepasRepository $repasRepository
     ): Response {
         try {
+            $user = $this->getUser();
+            if (!$user) {
+                return $this->redirectToRoute('app_login');
+            }
+
             $date = new \DateTime($request->request->get('date'));
             $type = $request->request->get('type');
             $nombrePersonnes = $request->request->get('nombrePersonnes');
@@ -132,8 +158,8 @@ class PlanningController extends AbstractController
                 return $this->redirectToRoute('repas_show', ['id' => $id]);
             }
 
-            // Chercher tous les plannings existants pour cette date
-            $existingPlannings = $this->planningRepository->findByDateWithMeals($date);
+            // Chercher tous les plannings existants pour cette date et cet utilisateur
+            $existingPlannings = $this->planningRepository->findByDateAndUserWithMeals($date, $user);
             
             $planning = null;
             if (!empty($existingPlannings)) {
@@ -156,41 +182,12 @@ class PlanningController extends AbstractController
                         'message' => 'Un repas existe déjà pour ce créneau. Voulez-vous le remplacer ?'
                     ]);
                 }
-
-                // Supprimer les autres plannings après avoir fusionné leurs repas
-                for ($i = 1; $i < count($existingPlannings); $i++) {
-                    $otherPlanning = $existingPlannings[$i];
-                    
-                    // Fusionner les repas s'ils n'existent pas dans le planning principal
-                    if (!$planning->getPetitDejeuner() && $otherPlanning->getPetitDejeuner()) {
-                        $planning->setPetitDejeuner($otherPlanning->getPetitDejeuner());
-                        $planning->setNombrePersonnesPetitDejeuner($otherPlanning->getNombrePersonnesPetitDejeuner());
-                    }
-                    if (!$planning->getEncasMatin() && $otherPlanning->getEncasMatin()) {
-                        $planning->setEncasMatin($otherPlanning->getEncasMatin());
-                        $planning->setNombrePersonnesEncasMatin($otherPlanning->getNombrePersonnesEncasMatin());
-                    }
-                    if (!$planning->getDejeuner() && $otherPlanning->getDejeuner()) {
-                        $planning->setDejeuner($otherPlanning->getDejeuner());
-                        $planning->setNombrePersonnesDejeuner($otherPlanning->getNombrePersonnesDejeuner());
-                    }
-                    if (!$planning->getEncasApresMidi() && $otherPlanning->getEncasApresMidi()) {
-                        $planning->setEncasApresMidi($otherPlanning->getEncasApresMidi());
-                        $planning->setNombrePersonnesEncasApresMidi($otherPlanning->getNombrePersonnesEncasApresMidi());
-                    }
-                    if (!$planning->getDiner() && $otherPlanning->getDiner()) {
-                        $planning->setDiner($otherPlanning->getDiner());
-                        $planning->setNombrePersonnesDiner($otherPlanning->getNombrePersonnesDiner());
-                    }
-                    
-                    // Supprimer l'ancien planning
-                    $this->entityManager->remove($otherPlanning);
-                }
             }
 
             if (!$planning) {
                 $planning = new Planning();
                 $planning->setDate($date);
+                $planning->setUser($user);
             }
 
             // Mettre à jour le planning avec le nouveau repas

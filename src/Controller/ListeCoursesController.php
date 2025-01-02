@@ -31,7 +31,12 @@ class ListeCoursesController extends AbstractController
     #[Route('/liste/courses', name: 'liste_courses_index')]
     public function index(Request $request, SessionInterface $session, PlanningRepository $planningRepository, IngredientRepository $ingredientRepository): Response
     {
-        $listeCourses = $session->get('liste_courses', []);
+        $user = $this->getUser();
+        if (!$user) {
+            return $this->redirectToRoute('app_login');
+        }
+
+        $listeCourses = $session->get('liste_courses_' . $user->getId(), []);
         
         $form = $this->createForm(DateSelectionType::class);
         $form->handleRequest($request);
@@ -41,13 +46,13 @@ class ListeCoursesController extends AbstractController
             $dateDebut = $data['dateDebut'];
             $dateFin = $data['dateFin'];
 
-            $planning = $planningRepository->findByDateRange($dateDebut, $dateFin);
+            $planning = $planningRepository->findByDateRangeAndUser($dateDebut, $dateFin, $user);
             $listeCourses = $this->calculerListeCourses($planning, $ingredientRepository);
             
             // Trier la liste par ordre alphabétique des noms d'ingrédients
             ksort($listeCourses);
 
-            $session->set('liste_courses', $listeCourses);
+            $session->set('liste_courses_' . $user->getId(), $listeCourses);
             $this->addFlash('success', 'La liste de courses a été générée avec succès.');
         }
 
@@ -63,22 +68,35 @@ class ListeCoursesController extends AbstractController
         IngredientRepository $ingredientRepository,
         SessionInterface $session
     ): Response {
-        $planning = $planningRepository->findByWeek(new \DateTime());
+        $user = $this->getUser();
+        if (!$user) {
+            return $this->redirectToRoute('app_login');
+        }
+
+        $dateDebut = new \DateTime();
+        $dateFin = (clone $dateDebut)->modify('+7 days'); // +7 pour avoir 8 jours au total (aujourd'hui inclus)
+        
+        $planning = $planningRepository->findByDateRangeAndUser($dateDebut, $dateFin, $user);
         $listeCourses = $this->calculerListeCourses($planning, $ingredientRepository);
         
         // Trier la liste par ordre alphabétique des noms d'ingrédients
         ksort($listeCourses);
 
-        $session->set('liste_courses', $listeCourses);
+        $session->set('liste_courses_' . $user->getId(), $listeCourses);
 
-        $this->addFlash('success', 'La liste de courses a été générée avec succès.');
+        $this->addFlash('success', 'La liste de courses a été générée avec succès pour les 8 prochains jours.');
         return $this->redirectToRoute('liste_courses_index');
     }
 
     #[Route('/liste-courses/modifier', name: 'liste_courses_modifier', methods: ['GET', 'POST'])]
     public function modifierListeCourses(Request $request, SessionInterface $session, EntityManagerInterface $entityManager): Response
     {
-        $listeCourses = $session->get('liste_courses', []);
+        $user = $this->getUser();
+        if (!$user) {
+            return $this->redirectToRoute('app_login');
+        }
+
+        $listeCourses = $session->get('liste_courses_' . $user->getId(), []);
 
         $ingredients = [];
         foreach ($listeCourses as $nomIngredient => $item) {
@@ -111,7 +129,7 @@ class ListeCoursesController extends AbstractController
             // Trier la liste par ordre alphabétique des noms d'ingrédients
             ksort($newListeCourses);
 
-            $session->set('liste_courses', $newListeCourses);
+            $session->set('liste_courses_' . $user->getId(), $newListeCourses);
 
             $this->addFlash('success', 'La liste de courses a été mise à jour.');
             return $this->redirectToRoute('liste_courses_index');
