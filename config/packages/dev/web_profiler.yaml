@@ -1,8 +1,0 @@
-web_profiler:
-    toolbar: true
-    intercept_redirects: false
-
-framework:
-    profiler:
-        collect: false  # Désactive la collecte en dev si nécessaire
-        only_exceptions: true  # Ne collecte que les exceptions 

@@ -17,6 +17,27 @@ use Symfony\Component\Security\Csrf\TokenGenerator\TokenGeneratorInterface;
 
 class ResetPasswordController extends AbstractController
 {
+    #[Route('/test-email', name: 'test_email')]
+    public function testEmail(MailerInterface $mailer, LoggerInterface $logger): Response
+    {
+        try {
+            $email = (new Email())
+                ->from('noreply@planification-repas.fr')
+                ->to('test@example.com')
+                ->subject('Test email')
+                ->text('Ceci est un email de test.');
+
+            $logger->info('Tentative d\'envoi d\'email de test');
+            $mailer->send($email);
+            $logger->info('Email de test envoyé avec succès');
+
+            return new Response('Email de test envoyé avec succès. Vérifiez Mailtrap.');
+        } catch (\Exception $e) {
+            $logger->error('Erreur lors de l\'envoi de l\'email de test : ' . $e->getMessage());
+            return new Response('Erreur lors de l\'envoi de l\'email : ' . $e->getMessage());
+        }
+    }
+
     #[Route('/reset-password', name: 'app_forgot_password_request')]
     public function request(
         Request $request,
